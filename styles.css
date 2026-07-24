@@ -1,0 +1,1770 @@
+/* ===================== RESET & BASE ===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --menubar-h: 32px;
+  --widget-sm: 172px;         /* small square widget side */
+  --widget-gap: 16px;         /* gap between widgets */
+  --widget-radius: 22px;
+  --col-w: calc(var(--widget-sm) * 2 + var(--widget-gap)); /* width of a full column (2 small + gap) */
+  --desktop-pad: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: #fff;
+  overflow: hidden;
+  /* static wallpaper — fills the whole viewport, no letterbox */
+  background: #0a0a0a url("wallpaper.png?v=2") center / cover no-repeat fixed;
+}
+
+/* Full-viewport scene — columns hug the screen edges (no letterbox padding). */
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transform-origin: top left;
+  /* transparent so the body's iOS gradient shows edge-to-edge */
+  background: transparent;
+}
+
+/* ===================== MENU BAR ===================== */
+.menubar {
+  height: var(--menubar-h);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.menubar__left,
+.menubar__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menubar__apple {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.95;
+}
+.menubar__apple svg {
+  width: 15px;
+  height: 17px;
+  display: block;
+}
+
+.menubar__item {
+  cursor: default;
+}
+
+.menubar__item--bold {
+  font-weight: 600;
+}
+
+.menubar__icon {
+  font-size: 12px;
+  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* wifi / battery glyphs */
+.menubar__glyph {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+.menubar__glyph--wifi {
+  width: 21px;
+  height: 14px; /* match the menubar text height */
+  stroke-width: 2.6;
+}
+
+.menubar__battery {
+  gap: 5px;
+}
+.menubar__pct {
+  font-size: 12px;
+}
+.menubar__glyph--battery {
+  width: 26px;
+  height: 13px;
+}
+
+.menubar__clock {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ===================== DESKTOP ===================== */
+.desktop {
+  flex: 1 1 auto;
+  min-height: 0; /* never let tall content push the dock off-screen */
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--desktop-pad);
+  /* keeps the center of the screen open for the wallpaper subject */
+}
+
+/* ===================== WIDGET COLUMNS ===================== */
+.widget-col {
+  width: var(--col-w);
+  display: flex;
+  flex-direction: column;
+  gap: var(--widget-gap);
+}
+
+/* a row that holds two small widgets side by side */
+.widget-row {
+  display: flex;
+  gap: var(--widget-gap);
+}
+
+/* ===================== WIDGETS ===================== */
+.widget {
+  border-radius: var(--widget-radius);
+  background: rgba(40, 40, 45, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* small: square (2x2) */
+.widget--sm {
+  width: var(--widget-sm);
+  height: var(--widget-sm);
+  flex: 0 0 auto;
+}
+
+/* medium: wide rectangle (4x2) — spans full column width */
+.widget--md {
+  width: 100%;
+  height: var(--widget-sm);
+}
+
+/* large: full column width, two rows tall (spans a md + small row) */
+.widget--lg {
+  width: 100%;
+  height: calc(var(--widget-sm) * 2 + var(--widget-gap));
+}
+
+.widget__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.2px;
+}
+
+/* ===================== CLOCK WIDGET ===================== */
+.widget--clock {
+  /* the white clock face fills the whole rounded-square tile */
+  padding: 0;
+  border: none;
+  background:
+    radial-gradient(circle at 50% 42%, #ffffff 0%, #f4f4f2 70%, #e9e9e6 100%);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.clock {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* tick marks */
+.clock__tick {
+  stroke: #a6a6a6;
+  stroke-width: 2;
+  stroke-linecap: butt;
+}
+
+.clock__tick--major {
+  stroke: #464646;
+  stroke-width: 3.4;
+}
+
+/* numerals */
+.clock__numeral {
+  fill: #4a4a4a;
+  font-family: "SF Pro Rounded", ui-rounded, -apple-system, "SF Pro Display",
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 21px;
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* hands — bold black rounded bars */
+.clock__hand {
+  stroke-linecap: round;
+}
+
+.clock__hand--hour {
+  stroke: #111;
+  stroke-width: 8;
+}
+
+.clock__hand--minute {
+  stroke: #111;
+  stroke-width: 6.5;
+}
+
+.clock__hand--second {
+  stroke: #ff9500;
+  stroke-width: 3;
+}
+
+.clock__second-ring {
+  fill: none;
+  stroke: #ff9500;
+  stroke-width: 2.4;
+}
+
+.clock__second-tail {
+  fill: #ff9500;
+}
+
+.clock__hub {
+  fill: #111;
+}
+
+.clock__hub-dot {
+  fill: #ff9500;
+}
+
+/* ===================== EXPERIENCE (TIMELINE) WIDGET ===================== */
+.widget--exp {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  /* match the left column's top two rows (clock/notes + music) */
+  height: calc(var(--widget-sm) * 2 + var(--widget-gap));
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  background: rgba(30, 30, 34, 0.6);
+}
+
+/* full-width gradient header band, flush with the widget edges */
+.exp__header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  padding: 15px 20px;
+  background: linear-gradient(145deg, #4a4a52 0%, #2a2a2e 45%, #141416 100%);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.exp__icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.exp__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+/* timeline rail — grows to fill the widget, items spread evenly */
+.exp__timeline {
+  list-style: none;
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 18px 20px 20px 44px;
+}
+
+.exp__item {
+  position: relative;
+  flex: 1 1 0; /* each item takes an equal share of the height */
+}
+
+/* connector line — spans from this dot down to the next dot */
+.exp__item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: 9px;
+  bottom: -9px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* node dot on the rail */
+.exp__dot {
+  position: absolute;
+  left: -24px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #24242a;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+}
+
+.exp__item--current .exp__dot {
+  background: #ff9500;
+  border-color: #ff9500;
+  box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.18);
+}
+
+/* row: role/company on the left, dates on the right */
+.exp__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.exp__info {
+  min-width: 0;
+}
+
+.exp__role {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.exp__company {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+.exp__date {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+/* ===================== FEATURED PROJECT WIDGET ===================== */
+.widget--project {
+  /* match the left column's bottom two rows so both columns align */
+  height: calc(var(--widget-sm) * 2 + var(--widget-gap));
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 12px;
+  gap: 12px;
+  background: rgba(30, 30, 34, 0.6);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.widget--project:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- carousel viewport ---- */
+.project__carousel {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.project__track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.project__slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+  background: var(--bg, linear-gradient(135deg, #6a5cff, #ff5c8a));
+}
+
+.project__tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ---- prev / next arrows ---- */
+.project__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+.project__nav:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+.project__nav--prev {
+  left: 10px;
+}
+.project__nav--next {
+  right: 10px;
+}
+.project__nav svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- dots ---- */
+.project__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.project__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.project__dot--active {
+  width: 16px;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* meta row: title + CTA arrow */
+.project__meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 6px 4px;
+}
+
+.project__text {
+  min-width: 0;
+}
+
+.project__name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project__role {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 2px;
+}
+
+.project__cta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.project__cta-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.project__cta-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease;
+}
+
+.project__cta:hover .project__cta-icon {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.project__cta svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ===================== TOOLS MARQUEE ===================== */
+.widget--tools {
+  padding: 0;
+  overflow: hidden;
+}
+.tools__viewport {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 16px;
+}
+.tool {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  /* glossy black→grey gradient so the logos pop */
+  background: linear-gradient(145deg, #4a4a52 0%, #2a2a2e 45%, #141416 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tool svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.tool--xd svg {
+  width: 56px;
+  height: 56px;
+}
+
+/* ===================== GAME IMAGE TILES ===================== */
+.widget--gameimg {
+  padding: 0;
+  cursor: pointer;
+}
+.widget--gameimg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+.widget--gameimg:hover img {
+  transform: scale(1.05);
+}
+
+/* ===================== EXPANDABLE GAME WINDOW (macOS) ===================== */
+.winmodal {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.winmodal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+.winmodal--open .winmodal__backdrop {
+  opacity: 1;
+}
+.winmodal__window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  max-width: 78%;
+  background: #f6f6f8;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  transform: scale(0.12);
+  opacity: 0;
+  /* macOS-style zoom open: quick scale-up with a soft settle */
+  transition: transform 0.34s cubic-bezier(0.2, 0.9, 0.25, 1), opacity 0.22s ease,
+    width 0.3s cubic-bezier(0.2, 0.9, 0.25, 1),
+    height 0.3s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+.winmodal--open .winmodal__window {
+  transform: scale(1);
+  opacity: 1;
+}
+/* green-button expand → true full screen (covers the whole desktop) */
+.winmodal__window--max {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  border-radius: 0;
+}
+.winmodal__window--max .winmodal__body {
+  padding: 24px;
+}
+.winmodal__bar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  background: linear-gradient(180deg, #ececef 0%, #dedee2 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.winmodal__lights {
+  display: flex;
+  gap: 8px;
+}
+.wl {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.wl--close {
+  background: #ff5f57;
+}
+.wl--min {
+  background: #febc2e;
+}
+.wl--max {
+  background: #28c840;
+}
+/* glyphs inside the traffic lights */
+.wl__g {
+  width: 17px;
+  height: 17px;
+  display: block;
+  opacity: 0; /* hidden until this specific dot is hovered */
+  transition: opacity 0.12s ease;
+}
+.wl:hover .wl__g {
+  opacity: 1;
+}
+/* disabled minimize (while full-screen): grey, no icon, not clickable */
+.wl:disabled {
+  cursor: default;
+}
+.wl:disabled .wl__g {
+  opacity: 0 !important;
+}
+.wl--min:disabled {
+  background: #c9c9cd;
+}
+.wl__g path {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wl__g--fill path {
+  fill: rgba(0, 0, 0, 0.6);
+  stroke: none;
+}
+.winmodal__title {
+  flex: 1 1 auto;
+  text-align: center;
+  margin-right: 52px; /* balance the traffic lights */
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a3a3c;
+}
+.winmodal__body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 22px 26px;
+  background: #f7f7f8;
+}
+
+/* --- hand-drawn Tic-Tac-Toe --- */
+.dttt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.dttt__board {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+.dttt__grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.dttt__grid path {
+  fill: none;
+  stroke: #141414;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+.dttt__cell {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  padding: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.dttt__cell:disabled {
+  cursor: default;
+}
+.dttt__cell[data-i="0"] { left: 0;     top: 0; }
+.dttt__cell[data-i="1"] { left: 100px; top: 0; }
+.dttt__cell[data-i="2"] { left: 200px; top: 0; }
+.dttt__cell[data-i="3"] { left: 0;     top: 100px; }
+.dttt__cell[data-i="4"] { left: 100px; top: 100px; }
+.dttt__cell[data-i="5"] { left: 200px; top: 100px; }
+.dttt__cell[data-i="6"] { left: 0;     top: 200px; }
+.dttt__cell[data-i="7"] { left: 100px; top: 200px; }
+.dttt__cell[data-i="8"] { left: 200px; top: 200px; }
+.dttt__cell .mark {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: markPop 0.18s ease;
+}
+@keyframes markPop {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.mark--o circle {
+  fill: none;
+  stroke: #e0281e;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.mark--x path {
+  fill: none;
+  stroke: #141414;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.dttt__cell--win {
+  background: rgba(224, 40, 30, 0.08);
+  border-radius: 10px;
+}
+.dttt__foot,
+.dmem__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.dttt__status,
+.dmem__status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+.dttt__reset,
+.dmem__reset {
+  border: 0;
+  background: #141414;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 15px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.dttt__reset:hover,
+.dmem__reset:hover {
+  background: #333;
+}
+
+/* --- Memory (expanded) --- */
+.dmem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.dmem__board {
+  display: grid;
+  grid-template-columns: repeat(4, 66px);
+  grid-auto-rows: 66px;
+  gap: 10px;
+}
+.dmem__card {
+  border: 0;
+  border-radius: 11px;
+  background: #dfe3ea;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.dmem__card:hover {
+  transform: translateY(-2px);
+}
+.dmem__card--up {
+  background: #cfe0ff;
+  color: #111;
+}
+.dmem__card--done {
+  background: #bff0cf;
+  color: #111;
+  cursor: default;
+}
+
+/* ===================== ABOUT ME → NOTES WINDOW ===================== */
+.noteswin {
+  position: relative;
+  width: 92%;
+  height: 88%;
+  max-width: 1400px;
+  max-height: 900px;
+  display: flex;
+  background: #ececed;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  transform: scale(0.12);
+  opacity: 0;
+  transition: transform 0.34s cubic-bezier(0.2, 0.9, 0.25, 1), opacity 0.22s ease;
+}
+.winmodal--open .noteswin {
+  transform: scale(1);
+  opacity: 1;
+}
+/* sidebar — white floating drawer, 4px inset on left/top/bottom, curved corners */
+.nw__sidebar {
+  position: relative;
+  z-index: 2; /* so the drawer's shadow falls over the note content */
+  width: 258px;
+  flex: 0 0 auto;
+  margin: 6px 0 6px 6px;
+  background: #fff;
+  border-radius: 10px;
+  /* soft shadow on the RIGHT side only (negative spread hides top/left/bottom) */
+  box-shadow: 14px 0 22px -12px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.nw__side-top {
+  height: 53px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+.nw__lights {
+  display: flex;
+  gap: 8px;
+}
+.nw__lights .wl {
+  width: 12px;
+  height: 12px;
+  cursor: default;
+}
+.nw__lights .wl--close {
+  cursor: pointer;
+}
+.nw__side-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.nw__ic {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #8a8a8a;
+  display: flex;
+}
+.nw__ic svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nw__section {
+  font-size: 12px;
+  font-weight: 700;
+  color: #707070;
+  padding: 10px 16px 6px;
+}
+.nw__folders {
+  list-style: none;
+  padding: 0 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.nw__folder {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.nw__folder--active {
+  background: #ececec;
+}
+.nw__folder svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+.nw__fname {
+  flex: 1 1 auto;
+  font-size: 14.5px;
+  color: #1e1e1e;
+}
+.nw__folder--active .nw__fname {
+  color: #f4a000;
+}
+.nw__count {
+  font-size: 14px;
+  color: #b3b3b3;
+}
+/* main panel */
+.nw__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+.nw__toolbar {
+  height: 53px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+}
+.nw__back {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  background: #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6d6d6d;
+  flex: 0 0 auto;
+}
+.nw__back svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nw__title {
+  margin-right: auto;
+  line-height: 1.15;
+}
+.nw__title-main {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+.nw__title-sub {
+  font-size: 11.5px;
+  color: #a3a3a3;
+}
+.nw__tools {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+.nw__tools button {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #4a4a4a;
+  display: flex;
+  align-items: center;
+}
+.nw__tools svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nw__more svg circle {
+  fill: currentColor;
+  stroke: none;
+}
+.nw__aa {
+  font-size: 17px;
+  font-weight: 600;
+  color: #4a4a4a;
+  line-height: 1;
+}
+.nw__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ececec;
+  border-radius: 8px;
+  padding: 6px 11px;
+  color: #9a9a9a;
+  width: 180px;
+  flex: 0 0 auto;
+}
+.nw__search svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.nw__search span {
+  font-size: 13px;
+}
+.nw__content {
+  flex: 1 1 auto;
+  padding-top: 16px;
+  text-align: center;
+}
+.nw__timestamp {
+  font-size: 12.5px;
+  color: #a8a8a8;
+}
+
+/* ===================== MINI GAME WIDGETS ===================== */
+.widget--game {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 10px 10px 8px;
+  gap: 7px;
+  background: rgba(30, 30, 34, 0.6);
+}
+
+.game__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.game__title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+.game__reset {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.game__reset:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.game__reset svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.game__status {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  min-height: 14px;
+}
+.game__status--win {
+  color: #4ade80;
+  font-weight: 700;
+}
+.game__status--lose {
+  color: #ff6b8a;
+  font-weight: 700;
+}
+
+/* --- Tic-Tac-Toe --- */
+.ttt__board {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 5px;
+  align-self: center;
+  width: 118px;
+  height: 118px;
+}
+.ttt__cell {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease;
+}
+.ttt__cell:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+.ttt__cell--x {
+  color: #58a6ff;
+}
+.ttt__cell--o {
+  color: #ff6b8a;
+}
+.ttt__cell--win {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* --- Memory --- */
+.mem__board {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  align-self: center;
+  width: 100%;
+}
+.mem__card {
+  position: relative;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.mem__card--up {
+  background: rgba(88, 166, 255, 0.22);
+  color: #fff;
+}
+.mem__card--done {
+  background: rgba(74, 222, 128, 0.22);
+  color: #fff;
+  cursor: default;
+}
+
+/* ===================== NOTES WIDGET ===================== */
+.widget--notes {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  background: #fdfdfb;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.notes__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(100deg, #f59b2c 0%, #f6c144 100%);
+}
+
+.notes__icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  flex: 0 0 auto;
+}
+
+.notes__title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.notes__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 12px;
+  min-height: 0;
+}
+
+.notes__greeting {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a2a2a;
+  margin-bottom: 4px;
+}
+
+.notes__text {
+  font-size: 13px;
+  line-height: 1.35;
+  color: #3d3d3d;
+}
+
+.notes__date {
+  margin-top: auto;
+  font-size: 13px;
+  color: #a0a0a0;
+}
+
+/* ===================== NOW PLAYING WIDGET ===================== */
+.widget--music {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 16px 18px 14px;
+  background: #ebe4d4;
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  color: #1c1c1c;
+}
+
+.music__top {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* album art — fills the row height, stays square */
+.music__art {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.music__art-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0.5px;
+  transform: rotate(-4deg);
+  font-family: "Arial Black", Impact, sans-serif;
+}
+
+.music__art-code {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 22px;
+  height: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    #fff 0 1px,
+    transparent 1px 2px,
+    #fff 2px 3px,
+    transparent 3px 5px
+  );
+  opacity: 0.85;
+}
+
+/* track info */
+.music__info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.music__now {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8171;
+  margin-bottom: 1px;
+}
+
+.music__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.music__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #141414;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: #b3ac9d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.music__artist {
+  font-size: 14px;
+  font-weight: 500;
+  color: #33302a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* controls */
+.music__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 0;
+}
+
+.music__btn {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #1f1f1f;
+  display: inline-flex;
+}
+
+.music__btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+  stroke-linejoin: round;
+}
+
+/* prev/next use both fill + stroke for the triangle+bar glyphs */
+.music__btn svg path {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.music__btn--play svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ensure the hidden play/pause glyph stays hidden (svg display beats [hidden]) */
+.music__btn--play svg[hidden] {
+  display: none;
+}
+
+/* mini waveform visualizer, pushed to the right */
+.music__viz {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.music__viz i {
+  width: 2px;
+  background: #2a2a2a;
+  border-radius: 1px;
+  animation: viz 1s ease-in-out infinite;
+}
+
+.music__viz i:nth-child(1) { height: 40%; animation-delay: 0s; }
+.music__viz i:nth-child(2) { height: 90%; animation-delay: 0.15s; }
+.music__viz i:nth-child(3) { height: 60%; animation-delay: 0.3s; }
+.music__viz i:nth-child(4) { height: 100%; animation-delay: 0.45s; }
+.music__viz i:nth-child(5) { height: 50%; animation-delay: 0.6s; }
+
+@keyframes viz {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+/* progress bar */
+.music__progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex: 0 0 auto;
+}
+
+.music__time {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6d6659;
+  flex: 0 0 auto;
+}
+
+.music__bar {
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 2px;
+  background: #cfc7b4;
+  overflow: hidden;
+}
+
+.music__bar-fill {
+  display: block;
+  height: 100%;
+  width: 37%;
+  background: #23211d;
+  border-radius: 2px;
+}
+
+/* ===================== DOCK ===================== */
+.dock {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 22px;
+  background: rgba(60, 60, 65, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* macOS-style hover tooltip (single element, positioned via JS) */
+.dock__tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%) translateY(6px) scale(0.96);
+  padding: 5px 13px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1d1d1f;
+  background: linear-gradient(180deg, #f7f7f9 0%, #e7e7ea 100%);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  z-index: 20;
+}
+.dock__tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: -1px;
+  border: 7px solid transparent;
+  border-top-color: #e7e7ea;
+}
+.dock__tooltip--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.dock__app {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: transform 0.16s ease;
+}
+
+.dock__app:hover {
+  transform: translateY(-6px) scale(1.05);
+}
+
+.dock__app svg {
+  width: 60%;
+  height: 60%;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dock__label {
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.dock__divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.28);
+  margin: 0 4px;
+  flex: 0 0 auto;
+}
+
+/* --- individual app icons --- */
+/* Finder: split-face SVG fills the whole tile */
+.dock__app--finder {
+  background: #eef0f3;
+  border-radius: 21%; /* measured from the reference */
+}
+.dock__app--finder svg {
+  width: 100%;
+  height: 100%;
+}
+/* Notes: skeuomorphic iOS icon — yellow header, perforation dots, ruled paper */
+.dock__app--notes {
+  /* horizontal inset so the ruled lines don't touch the left/right edges */
+  padding: 0 6px;
+  /* layer 1: embossed ruled lines (clipped to the padded content box)
+     layer 2: cream paper base (fills the whole icon, edge to edge) */
+  background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 11px,
+      #c7c3b8 11px 12px,
+      rgba(255, 255, 255, 0.6) 12px 13px
+    ),
+    linear-gradient(#f2efe7, #f2efe7);
+  background-clip: content-box, border-box;
+  background-origin: content-box, border-box;
+  background-position: 0 3px, 0 0;
+  background-repeat: repeat, no-repeat;
+}
+/* yellow header band with a soft drop shadow onto the paper */
+.dock__app--notes::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 27%;
+  background: linear-gradient(180deg, #ffdd55 0%, #f8ca20 100%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
+}
+/* dotted perforation row just below the header */
+.dock__app--notes::after {
+  content: "";
+  position: absolute;
+  top: 27%;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: radial-gradient(circle at center, #a9a59b 0.9px, transparent 1.4px);
+  background-size: 5px 8px;
+  background-repeat: repeat-x;
+}
+
+/* Music: red gradient, white beamed note */
+.dock__app--music {
+  background: linear-gradient(180deg, #fc5c69 0%, #f3283f 55%, #e71b33 100%);
+  border-radius: 22%;
+}
+.dock__app--music svg {
+  width: 100%;
+  height: 100%;
+}
+.dock__app--music svg g {
+  fill: #fff;
+}
+
+/* Adobe Acrobat: flat red with white "A" mark (measured from reference) */
+.dock__app--acrobat {
+  background: #fa0f00;
+  border-radius: 22%;
+}
+.dock__app--acrobat svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Mail: macOS Big Sur blue squircle — top sheen over a rich blue gradient */
+.dock__app--mail {
+  background:
+    radial-gradient(120% 95% at 50% -12%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(180deg, #4f9df6 0%, #2c7ef1 50%, #1a68e6 100%);
+  border-radius: 22.5%;
+}
+.dock__app--mail svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* LinkedIn */
+.dock__app--linkedin {
+  background: #0a66c2;
+}
+.dock__app--linkedin .dock__label {
+  color: #fff;
+  font-size: 30px;
+}
+
+/* Ensylon: exact logo image, cropped to the squircle */
+.dock__app--behance {
+  background: #265df5;
+  border-radius: 22.5%;
+}
+.dock__app--behance img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
