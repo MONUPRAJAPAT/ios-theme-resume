@@ -412,10 +412,9 @@
 
   const S = (b) => `<svg viewBox="0 0 24 24" aria-hidden="true">${b}</svg>`;
   const ICON = {
-    folderAdd: S('<path d="M3 7a2 2 0 0 1 2-2h3.2l1.8 2H15a2 2 0 0 1 2 2v2"/><path d="M19 14v6M16 17h6"/>'),
-    sidebar: S('<rect x="3" y="4.5" width="18" height="15" rx="2.5"/><line x1="9.5" y1="4.5" x2="9.5" y2="19.5"/>'),
-    folderY: '<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h3.3l1.7 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#f4a000" stroke-width="1.7" stroke-linejoin="round"/></svg>',
-    folderD: '<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h3.3l1.7 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#1e1e1e" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+    folderAdd: S('<path d="M3 8.5a1.8 1.8 0 0 1 1.8-1.8h2.9l1.5 1.7H15a1.8 1.8 0 0 1 1.8 1.8v6.3a1.8 1.8 0 0 1-1.8 1.8H4.8A1.8 1.8 0 0 1 3 16.5z"/><path d="M19 4.6v3.8M17.1 6.5h3.8"/>'),
+    sidebar: S('<rect x="3" y="5" width="18" height="14" rx="3"/><line x1="9.5" y1="5" x2="9.5" y2="19"/>'),
+    folder: '<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h3.3l1.7 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6.2 11.4H17.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
     chevron: S('<path d="M15 5l-6 7 6 7"/>'),
     compose: S('<path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.4 3.6a2 2 0 0 1 2.8 2.8L12 15.6 8 17l1.4-4z"/>'),
     checklist: S('<path d="M3.5 7l1.5 1.5L8 5.5"/><line x1="11" y1="7" x2="20.5" y2="7"/><path d="M3.5 15l1.5 1.5L8 13.5"/><line x1="11" y1="15" x2="20.5" y2="15"/>'),
@@ -425,11 +424,141 @@
     share: S('<path d="M12 3.5v11"/><path d="M8 7l4-4 4 4"/><path d="M6 12v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-7"/>'),
     more: S('<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/>'),
     search: S('<circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/>'),
+    copy: S('<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/>'),
+    award: S('<circle cx="12" cy="9" r="5.5"/><path d="M8.6 13.6 7 21l5-2.6 5 2.6-1.6-7.4"/>'),
+    mail: S('<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 8l8 5.5L20 8"/>'),
+    globe: S('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.7 2.5 4.2 5.7 4.2 9s-1.5 6.5-4.2 9c-2.7-2.5-4.2-5.7-4.2-9s1.5-6.5 4.2-9z"/>'),
+    linkedin: S('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="7.6" cy="8" r="1.1" fill="currentColor" stroke="none"/><path d="M7.6 10.8v6.2"/><path d="M11 17v-6.2"/><path d="M11 13.3c.4-1 1.4-1.8 2.7-1.8 1.6 0 2.7 1.1 2.7 3V17"/>'),
+    pin: S('<path d="M12 21c4-4 6.3-7.2 6.3-10.5a6.3 6.3 0 1 0-12.6 0C5.7 13.8 8 17 12 21z"/><circle cx="12" cy="10.4" r="2.3"/>'),
   };
+  const PORTFOLIO_URL = "https://ankurdbb32.github.io/Portfolio/";
 
-  function open() {
+  // ---- content builders ----
+  const P = (t) => '<p class="nw__p">' + t + "</p>";
+  const H2 = (t) => '<h2 class="nw__h2">' + t + "</h2>";
+  const HR = '<div class="nw__hr"></div>';
+  const UL = (items) =>
+    '<ul class="nw__ul">' + items.map((i) => '<li class="nw__li">' + i + "</li>").join("") + "</ul>";
+  const ULP = (items) =>
+    '<ul class="nw__ul nw__ul--plain">' + items.map((i) => '<li class="nw__li">' + i + "</li>").join("") + "</ul>";
+  const JOB = (title, date, bullets) => {
+    const idx = title.indexOf(",");
+    const role = idx >= 0 ? title.slice(0, idx) : title;
+    const org = idx >= 0 ? title.slice(idx + 1).trim() : "";
+    return (
+      '<div class="nw__job">' +
+        '<div class="nw__job-head">' +
+          '<div class="nw__job-titles">' +
+            '<div class="nw__job-role">' + role + "</div>" +
+            (org ? '<div class="nw__job-org">' + org + "</div>" : "") +
+          "</div>" +
+          (date ? '<span class="nw__job-date">' + date + "</span>" : "") +
+        "</div>" +
+        (bullets && bullets.length ? UL(bullets) : "") +
+      "</div>"
+    );
+  };
+  const TAGS = (items) =>
+    '<div class="nw__tags">' + items.map((i) => '<span class="nw__tag">' + i + "</span>").join("") + "</div>";
+  const CARD = (icon, title, sub, extra) =>
+    '<div class="nw__card">' +
+      '<span class="nw__card-ic">' + icon + "</span>" +
+      '<div class="nw__card-body">' +
+        '<div class="nw__card-title">' + title + "</div>" +
+        (sub ? '<div class="nw__card-sub">' + sub + "</div>" : "") +
+        (extra ? '<div class="nw__card-extra">' + extra + "</div>" : "") +
+      "</div>" +
+    "</div>";
+  const CROW = (icon, text) =>
+    '<div class="nw__crow"><span class="nw__crow-ic">' + icon + "</span>" +
+    '<span class="nw__crow-text">' + text + "</span></div>";
+
+  const CONTENT = {
+    "About Me":
+      '<h1 class="nw__h1">About Me</h1>' +
+      P(`Hello, I'm Ankur.`) +
+      P(`I'm a Senior Product Designer with 5+ years of experience creating digital products that balance user needs, business goals, and technical feasibility.`) +
+      P(`Over the years I've worked across enterprise software, insurance, fintech, hiring platforms, AI products, social media tools, and consumer applications, designing experiences that simplify complex workflows into intuitive interfaces.`) +
+      P(`My career began in software engineering, where I worked on Apple Maps. That experience fundamentally changed how I approach design. It taught me to understand systems before screens, logic before layouts, and scalability before aesthetics. Today I bridge the gap between design and development, making collaboration with engineers faster and more efficient.`) +
+      P(`Currently, I lead product design initiatives at Ensylon, designing enterprise solutions for EquiTrust and multiple internal products. My work spans product discovery, user research, information architecture, interaction design, design systems, prototyping, usability testing, and developer handoff.`) +
+      P(`I enjoy solving problems that most users never notice. Whether it's reducing the number of clicks required to complete a task, simplifying a complicated workflow, improving accessibility, or creating reusable design systems, I believe every small improvement contributes to a better overall experience.`) +
+      '<blockquote class="nw__quote">' + `"Design is not about making things look better. It's about making people's lives a little easier, one interaction at a time."` + "</blockquote>" +
+      HR +
+      H2(`My Design Philosophy`) +
+      P(`I don't design screens.`) +
+      P(`I design experiences.`) +
+      P(`A beautiful interface without usability is simply decoration. My goal is to create products that people understand instantly, enjoy using repeatedly, and trust over time.`) +
+      P(`I believe great design should feel invisible. Users shouldn't have to stop and think about where to click next. Every interaction should feel natural, predictable, and purposeful.`) +
+      P(`Good design answers three simple questions immediately:`) +
+      TAGS([`Where am I?`, `What can I do?`, `What happens next?`]) +
+      P(`If those questions aren't obvious, there's still work to do.`) +
+      HR +
+      H2(`How I Work`) +
+      P(`Every project begins with understanding the problem, not the interface.`) +
+      P(`My typical design process includes:`) +
+      TAGS([`Product Discovery`, `Stakeholder Workshops`, `User Interviews`, `Competitive Analysis`, `User Journey Mapping`, `Information Architecture`, `Wireframing`, `High Fidelity Design`, `Interactive Prototyping`, `Usability Testing`, `Design QA`, `Continuous Iteration`]) +
+      P(`I enjoy collaborating with product managers, developers, researchers, and business teams because the best products are never designed in isolation.`) +
+      HR +
+      H2(`Areas I Love Designing`) +
+      TAGS([`Enterprise SaaS Products`, `AI Powered Experiences`, `Design Systems`, `Dashboard & Analytics`, `Productivity Applications`, `Mobile Apps`, `Web Platforms`, `Internal Business Tools`, `Data Heavy Interfaces`, `Workflow Optimisation`]) +
+      HR +
+      H2(`Beyond Design`) +
+      P(`Outside of client work, I'm constantly exploring emerging technologies and experimenting with new ways of building digital products.`) +
+      P(`I actively work with AI-assisted design workflows to accelerate ideation while maintaining high design quality:`) +
+      TAGS([`Claude`, `ChatGPT`, `Cursor`, `Lovable`, `V0`, `Stitch`, `UX Pilot`, `Readdy AI`]) +
+      P(`I'm also drawn to the space where design meets engineering:`) +
+      TAGS([`Design Engineering`, `Motion Design`, `Micro Interactions`, `Spatial Interfaces`, `Design + Code Collaboration`]) +
+      P(`Learning has become part of my daily routine because the design industry evolves quickly, and I believe curiosity is one of the most valuable skills a designer can have.`),
+
+    "Professional Experience":
+      '<h1 class="nw__h1">Professional Experience</h1>' +
+      JOB(`Senior UI/UX Designer, Ensylon, Jaipur`, `Jun 2025 - Present`, [`Leading end-to-end product design for EquiTrust's digital ecosystem, including the Quotient hiring platform and 4+ enterprise insurance tools across policy, retirement, and annuity workflows`, `Designed and optimized multi-step user journeys within the Quotient platform, covering candidate onboarding, profile creation, job workflows, and recruiter interactions`, `Delivered 30+ wireframes, user flows, and high-fidelity prototypes, reducing design iteration cycles by ~30% across stakeholder reviews`, `Conducted structured user research with 30+ participants in 2-week cycles, identifying usability gaps and improving task completion rates by ~25% across hiring and internal workflows`, `Built and scaled reusable design system components across hiring and insurance products, reducing design-to-development turnaround time by ~35%`, `Delivered developer-ready specifications, interaction states, and edge cases, improving implementation efficiency by ~34% and reducing rework`, `Collaborated with US-based stakeholders, product managers, and engineering teams to translate complex hiring and insurance requirements into scalable UX solutions`, `Contributed to product direction by presenting UX insights that influenced feature prioritization and roadmap decisions`]) +
+      JOB(`UI/UX Designer, Oolook, Jaipur`, `May 2023 - Apr 2025`, [`Designed end-to-end user experiences across web and mobile platforms, structuring core user journeys from onboarding to key feature interactions`, `Created scalable information architecture and interaction models, improving task completion rates by ~25% across primary user flows`, `Conducted usability testing and iterative design improvements, increasing user satisfaction by 15–20% based on feedback and usage patterns`, `Collaborated closely with product managers and engineers to translate requirements into feasible, high-quality design solutions`, `Delivered high-fidelity prototypes and developer-ready specifications, reducing ambiguity during implementation and improving delivery speed`, `Contributed to feature prioritization by leveraging user insights, aligning design decisions with business and product goals`]) +
+      JOB(`Software Development Engineer, Apple Maps Via ThoughtGenesis, Hyderabad`, `Jan 2022 - Jan 2023`, [`Improved map-based user experience by enhancing visualization logic for geographic data layers (e.g., water bodies) across multiple zoom levels`, `Designed and implemented data optimization pipelines, achieving ~487% improvement in data accuracy, consistency, and availability for map interfaces`, `Worked on system-level design for data-driven UI behavior, ensuring consistency and scalability across large datasets and edge cases`]),
+
+    "Internships":
+      '<h1 class="nw__h1">Internships</h1>' +
+      JOB(`UI/UX Design Intern, BrainQuest (Remote)`, `Feb 2023 - Apr 2023`, [`Iterated on designs using stakeholder feedback and usage insights, improving clarity and efficiency across key financial interactions`, `Delivered end-to-end UX solutions across fintech and insurance workflows by aligning user needs, business requirements, and system constraints, contributing to scalable, conversion-focused product experiences`, `Built intuitive interfaces for financial dashboards, policy comparison views, and transaction tracking systems, improving usability of data-heavy and high-frequency workflows`]) +
+      JOB(`UI/UX Design Intern, Trumsy (Remote)`, `Apr 2021 - Dec 2021`, [`Owned the end-to-end design lifecycle for an EdTech startup's gamified learning platform for kids, translating complex user needs into intuitive UI flows and engaging learning experiences aligned with product KPIs`, `Collaborated closely with PMs and developers to define product features, apply usability best practices, and deliver high-impact design solutions under tight timelines.`]),
+
+    "Skills":
+      '<h1 class="nw__h1">Skills</h1>' +
+      H2(`Design`) +
+      TAGS([`User Experience (UX) Design`, `User Interface (UI) Design`, `Enterprise Product Design`, `SaaS Product Design`, `AI/LLM UX Design`, `Conversational UI Design`, `AI Copilot Experience Design`, `Prompt UX Design`, `Dashboard & Analytics Design`, `Data Visualization`, `Design Systems`, `Component Libraries`, `Information Architecture`, `User Research`, `User Journey Mapping`, `Wireframing`, `Prototyping`, `Interaction Design`, `Responsive Design`, `Mobile App Design`, `Web Application Design`, `Accessibility (WCAG)`, `Usability Testing`, `Design Thinking`, `Visual Design`, `Heuristic Evaluation`, `Design Strategy`, `UX Writing`, `User-Centered Design`]) +
+      HR +
+      H2(`Tools`) +
+      TAGS([`Figma`, `FigJam`, `Adobe XD`, `Photoshop`, `Illustrator`, `Miro`, `Jira`, `Confluence`, `Notion`, `Cursor`, `Lovable AI`, `V0 by Vercel`, `ChatGPT`, `Claude`, `Gemini`, `Stitch`, `UX Pilot`, `Readdy.ai`, `Wix`, `WordPress`, `Maze`, `Zeplin`, `Chrome DevTools`]) +
+      HR +
+      H2(`Development Collaboration`) +
+      TAGS([`HTML5`, `CSS3`, `JavaScript Fundamentals`, `Bootstrap`, `Responsive Web Design`, `Mobile-First Design`, `Design-to-Development Handoff`, `Figma Inspect`, `Component Libraries`, `Design Systems`, `Developer QA`, `Frontend Feasibility Review`, `Cross-Functional Collaboration`, `Agile/Scrum`, `Stakeholder Management`, `Product-Engineering Collaboration`]),
+
+    "Certifications":
+      '<h1 class="nw__h1">Certifications</h1>' +
+      CARD(ICON.award, `Google UX Design Professional Certificate`, `Google`, ``) +
+      CARD(ICON.award, `Using AI in UX Design Process`, `LinkedIn Learning`, ``) +
+      H2(`Currently Learning`) +
+      TAGS([`AI Product Design`, `Motion Design`, `Design Engineering`]),
+
+    "POR":
+      '<h1 class="nw__h1">Positions of Responsibility</h1>' +
+      CARD(ICON.award, `Best Design Award`, `Design Rush · IIT BHU`, `Won among 1200+ participants for designing Trado, a Crypto Trading App.`) +
+      CARD(ICON.award, `Head Team Member`, `Design Fest · IIT Roorkee`, `Led the design team during the national design competition.`),
+
+    "Contact":
+      '<h1 class="nw__h1">Contact</h1>' +
+      P(`Let's build something meaningful.`) +
+      '<div class="nw__contacts">' +
+        CROW(ICON.mail, '<a class="nw__email" href="mailto:ankurmeena194@gmail.com">ankurmeena194@gmail.com</a>') +
+        CROW(ICON.globe, '<a class="nw__email" href="' + PORTFOLIO_URL + '" target="_blank" rel="noopener">Portfolio</a>') +
+        CROW(ICON.linkedin, '<a class="nw__email" href="https://www.linkedin.com/in/" target="_blank" rel="noopener">LinkedIn</a>') +
+        CROW(ICON.pin, "Jaipur, India") +
+      "</div>",
+  };
+  const TABS = Object.keys(CONTENT);
+
+  function open(originEl) {
     const sRect = screen.getBoundingClientRect();
-    const w = widget.getBoundingClientRect();
+    const w = (originEl || widget).getBoundingClientRect();
     const ox = w.left + w.width / 2 - sRect.left;
     const oy = w.top + w.height / 2 - sRect.top;
 
@@ -440,6 +569,8 @@
     const win = document.createElement("div");
     win.className = "noteswin";
     win.style.transformOrigin = ox + "px " + oy + "px";
+    // masked placeholder rows (do NOT embed real secrets in a public site)
+    const rows = Array.from({ length: 10 }, () => "<tr><td>•••••–••••</td></tr>").join("");
     win.innerHTML =
       '<aside class="nw__sidebar">' +
         '<div class="nw__side-top">' +
@@ -447,38 +578,284 @@
             '<button class="wl wl--close" aria-label="Close"></button>' +
             '<span class="wl wl--min"></span><span class="wl wl--max"></span>' +
           "</div>" +
-          '<div class="nw__side-actions">' +
-            '<button class="nw__ic" aria-label="New Folder">' + ICON.folderAdd + "</button>" +
-            '<button class="nw__ic" aria-label="Toggle Sidebar">' + ICON.sidebar + "</button>" +
-          "</div>" +
         "</div>" +
-        '<div class="nw__section">On My Mac</div>' +
         '<ul class="nw__folders">' +
-          '<li class="nw__folder nw__folder--active">' + ICON.folderY + '<span class="nw__fname">All on My Mac</span><span class="nw__count">13</span></li>' +
-          '<li class="nw__folder">' + ICON.folderD + '<span class="nw__fname">Notes</span><span class="nw__count">13</span></li>' +
-          '<li class="nw__folder">' + ICON.folderD + '<span class="nw__fname">Skills</span><span class="nw__count">0</span></li>' +
+          TABS.map((n, i) =>
+            '<li class="nw__folder' + (i === 0 ? " nw__folder--active" : "") + '">' +
+            ICON.folder + '<span class="nw__fname">' + n + "</span></li>"
+          ).join("") +
         "</ul>" +
-        '<div class="nw__section">Tags</div>' +
       "</aside>" +
       '<section class="nw__main">' +
         '<header class="nw__toolbar">' +
-          '<button class="nw__back" aria-label="Back">' + ICON.chevron + "</button>" +
-          '<div class="nw__title"><div class="nw__title-main">All on My Mac</div><div class="nw__title-sub">13 notes</div></div>' +
-          '<div class="nw__tools">' +
-            "<button>" + ICON.compose + "</button>" +
-            '<button><span class="nw__aa">Aa</span></button>' +
-            "<button>" + ICON.checklist + "</button>" +
-            "<button>" + ICON.table + "</button>" +
-            "<button>" + ICON.attach + "</button>" +
-            "<button>" + ICON.markup + "</button>" +
-          "</div>" +
-          '<div class="nw__tools">' +
-            "<button>" + ICON.share + "</button>" +
-            '<button class="nw__more">' + ICON.more + "</button>" +
-          "</div>" +
+          '<div class="nw__title"><div class="nw__title-main">All on My Mac</div><div class="nw__title-sub">10 notes</div></div>' +
+          '<button class="nw__circ" aria-label="Share">' + ICON.share + "</button>" +
           '<div class="nw__search">' + ICON.search + "<span>Search</span></div>" +
         "</header>" +
-        '<div class="nw__content"><div class="nw__timestamp">' + stamp() + "</div></div>" +
+        '<div class="nw__content"></div>' +
+      "</section>";
+
+    modal.appendChild(backdrop);
+    modal.appendChild(win);
+    screen.appendChild(modal);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => modal.classList.add("winmodal--open"))
+    );
+
+    function close() {
+      modal.classList.remove("winmodal--open");
+      setTimeout(() => modal.remove(), 330);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("click", outsideShare);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") close();
+    }
+    backdrop.addEventListener("click", close);
+    win.querySelector(".wl--close").addEventListener("click", close);
+    const backBtn = win.querySelector(".nw__back");
+    if (backBtn) backBtn.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+
+    // share → "Copy Link" popover
+    const shareBtn = win.querySelector('.nw__circ[aria-label="Share"]');
+    let sharePop = null;
+    function outsideShare(e) {
+      if (sharePop && !sharePop.contains(e.target) && !shareBtn.contains(e.target)) closeShare();
+    }
+    function closeShare() {
+      if (!sharePop) return;
+      sharePop.remove();
+      sharePop = null;
+      document.removeEventListener("click", outsideShare);
+    }
+    shareBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (sharePop) return closeShare();
+      sharePop = document.createElement("div");
+      sharePop.className = "nw__share-pop";
+      sharePop.innerHTML =
+        '<div class="nw__share-title">Copy Link</div>' +
+        '<button class="nw__share-row" type="button">' +
+          '<span class="nw__share-url">' + PORTFOLIO_URL + "</span>" +
+          '<span class="nw__share-copy">' + ICON.copy + "</span>" +
+        "</button>";
+      win.appendChild(sharePop);
+      const wr = win.getBoundingClientRect();
+      const br = shareBtn.getBoundingClientRect();
+      sharePop.style.top = br.bottom - wr.top + 8 + "px";
+      sharePop.style.left = Math.max(8, br.right - wr.left - 300) + "px";
+      requestAnimationFrame(() => sharePop.classList.add("nw__share-pop--show"));
+      sharePop.querySelector(".nw__share-row").addEventListener("click", () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(PORTFOLIO_URL).catch(() => {});
+        sharePop.querySelector(".nw__share-title").textContent = "Link Copied!";
+        setTimeout(closeShare, 950);
+      });
+      setTimeout(() => document.addEventListener("click", outsideShare), 0);
+    });
+
+    // clickable tabs → swap note content
+    const folders = win.querySelectorAll(".nw__folder");
+    const contentEl = win.querySelector(".nw__content");
+    const titleMain = win.querySelector(".nw__title-main");
+    const titleSub = win.querySelector(".nw__title-sub");
+    function selectTab(fEl) {
+      folders.forEach((f) => f.classList.remove("nw__folder--active"));
+      fEl.classList.add("nw__folder--active");
+      const name = fEl.querySelector(".nw__fname").textContent;
+      titleMain.textContent = name;
+      titleSub.textContent = "";
+      contentEl.innerHTML =
+        '<div class="nw__doc"><div class="nw__date">' + stamp() + "</div>" +
+        (CONTENT[name] || "") + "</div>";
+      contentEl.scrollTop = 0;
+    }
+    folders.forEach((f) => f.addEventListener("click", () => selectTab(f)));
+    selectTab(folders[0]);
+  }
+
+  widget.style.cursor = "pointer";
+  widget.addEventListener("click", () => open(widget));
+
+  // dock "About Me" (Notes) icon opens the same window, zooming from the dock
+  const dockNotes = document.querySelector(".dock__app--notes");
+  if (dockNotes) {
+    dockNotes.style.cursor = "pointer";
+    dockNotes.addEventListener("click", (e) => {
+      e.preventDefault();
+      open(dockNotes);
+    });
+  }
+})();
+
+/* ===================== PROJECTS → FINDER WINDOW ===================== */
+(function () {
+  const trigger = document.querySelector(".dock__app--finder");
+  const screen = document.querySelector(".screen");
+  if (!trigger || !screen) return;
+
+  const S = (b) => '<svg viewBox="0 0 24 24" aria-hidden="true">' + b + "</svg>";
+  const I = {
+    recents: S('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+    shared: S('<path d="M3 8a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="9" cy="12.5" r="1.5"/><path d="M6.2 16.5c.4-1.3 1.5-2 2.8-2s2.4.7 2.8 2"/>'),
+    apps: S('<path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.3L12 15.3 7.2 17.8l.9-5.3L4.2 8.7l5.4-.8z"/>'),
+    doc: S('<path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/>'),
+    desktop: S('<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M9 21h6M12 17v4"/>'),
+    downloads: S('<circle cx="12" cy="12" r="8.5"/><path d="M12 8v6m0 0l-2.6-2.6M12 14l2.6-2.6"/>'),
+    icloud: S('<path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 18z"/>'),
+    home: S('<path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/>'),
+    airdrop: S('<path d="M7.5 13.5a6 6 0 0 1 9 0"/><path d="M10 11a3 3 0 0 1 4 0"/><circle cx="12" cy="18" r="1.1"/>'),
+    network: S('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.3 4 5.3 4 8.5s-1.5 6.2-4 8.5c-2.5-2.3-4-5.3-4-8.5s1.5-6.2 4-8.5z"/>'),
+    bin: S('<path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6.5 7l1 13a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1l1-13"/>'),
+    tags: S('<path d="M4 5.5h6.5l8.5 8.5-6.5 6.5L4 12z"/><circle cx="8.3" cy="9" r="1.2" fill="currentColor" stroke="none"/>'),
+    star: S('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 22l-5.2-2.4 1-5.8L3.5 9.7l5.9-.9z"/>'),
+    grid: S('<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/>'),
+    briefcase: S('<rect x="3" y="7.5" width="18" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5"/><path d="M3 12h18"/>'),
+    robot: S('<rect x="4.5" y="8" width="15" height="11" rx="3"/><path d="M12 4.5V8"/><circle cx="12" cy="4" r="1.2" fill="currentColor" stroke="none"/><circle cx="9.5" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="13" r="1.1" fill="currentColor" stroke="none"/>'),
+    layers: S('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/>'),
+    phone: S('<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M10.5 18h3"/>'),
+    web: S('<rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="8" cy="6.5" r="0.6" fill="currentColor" stroke="none"/>'),
+  };
+  const T = {
+    back: S('<path d="M15 6l-6 6 6 6"/>'),
+    fwd: S('<path d="M9 6l6 6-6 6"/>'),
+    grid: S('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'),
+    list: S('<circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none"/><path d="M8 6h12M8 12h12M8 18h12"/>'),
+    columns: S('<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>'),
+    gallery: S('<rect x="3.5" y="4" width="17" height="10.5" rx="2"/><path d="M6 18h3M11 18h2.5M16 18h2"/>'),
+    group: S('<rect x="3" y="4.5" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><path d="M11 6h9M11 8.5h6M11 13.5h9M11 16h6"/>'),
+    chev: S('<path d="M6 9l6 6 6-6"/>'),
+    share: S('<path d="M12 3.5v11"/><path d="M8 7l4-4 4 4"/><path d="M6 12v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-7"/>'),
+    tag: S('<path d="M4 5.5h6.5l8.5 8.5-6.5 6.5L4 12z"/><circle cx="8.3" cy="9" r="1.2" fill="currentColor" stroke="none"/>'),
+    more: S('<circle cx="6" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.6" fill="currentColor" stroke="none"/>'),
+    search: S('<circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/>'),
+  };
+  const FOLDER =
+    '<svg viewBox="0 0 80 64" class="fw__folder-svg" aria-hidden="true">' +
+    '<defs><linearGradient id="fwBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd2ff"/><stop offset="1" stop-color="#49a7f5"/></linearGradient>' +
+    '<linearGradient id="fwFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#addcff"/><stop offset="1" stop-color="#5cb4f7"/></linearGradient></defs>' +
+    '<path d="M4 12a4 4 0 0 1 4-4h18l6 6h36a4 4 0 0 1 4 4v4H4z" fill="url(#fwBack)"/>' +
+    '<path d="M4 17h72a4 4 0 0 1 4 4v29a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="url(#fwFront)"/></svg>';
+
+  const item = (icon, label, cls) =>
+    '<div class="fw__item' + (cls ? " " + cls : "") + '">' +
+    '<span class="fw__item-ic">' + icon + "</span>" +
+    '<span class="fw__item-label">' + label + "</span></div>";
+  const tag = (color, label) =>
+    '<div class="fw__item"><span class="fw__tagdot" style="background:' + color + '"></span>' +
+    '<span class="fw__item-label">' + label + "</span></div>";
+  const tile = (name) =>
+    '<div class="fw__tile">' + FOLDER + '<span class="fw__tile-label">' + name + "</span></div>";
+
+  // ---- project cards ----
+  const M = {
+    mon: S('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6M12 16v4"/>'),
+    cal: S('<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/>'),
+    stack: S('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'),
+    star: S('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 22l-5.2-2.4 1-5.8L3.5 9.7l5.9-.9z"/>'),
+    more: S('<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>'),
+  };
+  const MINIFOLDER =
+    '<svg class="pj__folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5A1.5 1.5 0 0 1 4 5h5l1.6 1.6h8.9A1.5 1.5 0 0 1 21 8.1v9.4A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" fill="#4aa8f5"/></svg>';
+  const AVATAR =
+    '<svg class="pj__feat-svg" viewBox="0 0 80 90" aria-hidden="true"><rect width="80" height="90" rx="10" fill="#dfe1e6"/><circle cx="40" cy="33" r="15" fill="#b9bcc4"/><path d="M13 84c2.5-16 14-24 27-24s24.5 8 27 24z" fill="#b9bcc4"/></svg>';
+  const MOCK = (theme) => {
+    const c = theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.75)";
+    return (
+      '<svg class="pj__mock" viewBox="0 0 320 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<rect x="10" y="10" width="46" height="150" rx="8" fill="' + c + '"/>' +
+      '<rect x="66" y="12" width="244" height="15" rx="5" fill="' + c + '"/>' +
+      '<rect x="66" y="36" width="76" height="50" rx="8" fill="' + c + '"/>' +
+      '<rect x="150" y="36" width="76" height="50" rx="8" fill="' + c + '"/>' +
+      '<rect x="234" y="36" width="76" height="50" rx="8" fill="' + c + '"/>' +
+      '<rect x="66" y="94" width="158" height="66" rx="8" fill="' + c + '"/>' +
+      '<rect x="232" y="94" width="78" height="66" rx="8" fill="' + c + '"/>' +
+      "</svg>"
+    );
+  };
+
+  const PROJECTS = [
+    { title: "Lumina UX", cat: "AI Healthcare Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#dbe7f7)", tags: [["Enterprise", "green"], ["AI", "purple"]], mi: "mon", mt: "12 Screens", yr: "2026" },
+    { title: "Nexus Banking", cat: "Banking & FinTech Platform", badge: "Case Study", bc: "case", theme: "dark", grad: "linear-gradient(135deg,#1b1a2e,#242346)", tags: [["Enterprise", "green"], ["FinTech", "blue"]], mi: "mon", mt: "18 Screens", yr: "2026" },
+    { title: "EquiTrust Platform", cat: "Insurance & Annuity Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#e2ecf8)", tags: [["Enterprise", "green"], ["Insurance", "orange"]], mi: "mon", mt: "24 Screens", yr: "2025" },
+    { title: "Oolook", cat: "AI Social Media Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#f0ecfb,#e5def7)", tags: [["SaaS", "teal"], ["AI", "purple"]], mi: "mon", mt: "15 Screens", yr: "2025" },
+    { title: "Apple Maps (via TG)", cat: "Data Visualization & Maps", badge: "Archive", bc: "archive", theme: "dark", grad: "linear-gradient(135deg,#0f1420,#1b2436)", tags: [["System Design", "green"], ["Maps", "gray"]], mi: "mon", mt: "10 Screens", yr: "2023" },
+    { title: "Quotient Hiring", cat: "Recruitment Platform", badge: "Case Study", bc: "case", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#dfe9f7)", tags: [["Enterprise", "green"], ["HR Tech", "blue"]], mi: "mon", mt: "14 Screens", yr: "2025" },
+    { title: "Ensylon Design System", cat: "Design System & Components", badge: "System", bc: "system", theme: "dark", grad: "linear-gradient(135deg,#151521,#20202f)", tags: [["Internal", "green"], ["Design System", "gray"]], mi: "stack", mt: "120+ Components", yr: "2025" },
+    { featured: true, title: "Company Assignments", cat: "Projects & Tasks at Ensylon", badge: "Featured", bc: "featured", tags: [["Internal", "green"], ["Assignments", "gray"]], mi: "mon", mt: "Various", yr: "Ongoing" },
+  ];
+
+  function card(p) {
+    const tags = p.tags
+      .map((t) => '<span class="pj__tag pj__tag--' + t[1] + '">' + t[0] + "</span>")
+      .join("");
+    const thumb = p.featured
+      ? '<div class="pj__thumb pj__thumb--feat">' +
+          '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span>" +
+          '<div class="pj__feat"><div><div class="pj__feat-name">Ankur<br>Meena</div>' +
+          '<div class="pj__feat-role">Product Designer</div>' +
+          '<div class="pj__feat-desc">Designing meaningful experiences that solve real problems.</div></div>' +
+          '<div class="pj__feat-av">' + AVATAR + "</div></div></div>"
+      : '<div class="pj__thumb pj__thumb--' + p.theme + '" style="background:' + p.grad + '">' +
+          MOCK(p.theme) +
+          '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span></div>";
+    return (
+      '<div class="pj">' + thumb +
+        '<div class="pj__body">' +
+          '<div class="pj__row">' + MINIFOLDER +
+            '<span class="pj__title">' + p.title + "</span>" +
+            '<button class="pj__star">' + M.star + "</button></div>" +
+          '<div class="pj__cat">' + p.cat + "</div>" +
+          '<div class="pj__tags">' + tags + "</div>" +
+          '<div class="pj__meta">' +
+            '<span class="pj__metaitem">' + M[p.mi] + p.mt + "</span>" +
+            '<span class="pj__metaitem">' + M.cal + p.yr + "</span>" +
+            '<button class="pj__more">' + M.more + "</button></div>" +
+        "</div></div>"
+    );
+  }
+
+  function open(originEl) {
+    const sRect = screen.getBoundingClientRect();
+    const r = (originEl || trigger).getBoundingClientRect();
+    const ox = r.left + r.width / 2 - sRect.left;
+    const oy = r.top + r.height / 2 - sRect.top;
+
+    const modal = document.createElement("div");
+    modal.className = "winmodal";
+    const backdrop = document.createElement("div");
+    backdrop.className = "winmodal__backdrop";
+    const win = document.createElement("div");
+    win.className = "finderwin";
+    win.style.transformOrigin = ox + "px " + oy + "px";
+    win.innerHTML =
+      '<aside class="fw__sidebar">' +
+        '<div class="fw__side-top"><div class="winmodal__lights">' +
+          '<button class="wl wl--close" aria-label="Close"></button>' +
+          '<span class="wl wl--min"></span><span class="wl wl--max"></span>' +
+        "</div></div>" +
+        '<div class="fw__list">' +
+          item(I.recents, "Recents", "fw__item--active") +
+          item(I.shared, "Shared") +
+          '<div class="fw__section">Portfolio</div>' +
+          item(I.grid, "Featured Projects") +
+          item(I.briefcase, "Assignments") +
+          item(I.robot, "AI Products") +
+          item(I.layers, "Design Systems") +
+          item(I.phone, "Mobile Apps") +
+          item(I.web, "Web Apps") +
+        "</aside>" +
+      '<section class="fw__main">' +
+        '<header class="fw__toolbar">' +
+          '<div class="fw__titles"><div class="fw__title">Recents</div>' +
+            '<div class="fw__subtitle">8 items, 5 Folders</div></div>' +
+          '<button class="nw__circ">' + T.share + "</button>" +
+          '<div class="nw__search">' + T.search + "<span>Search</span></div>" +
+        "</header>" +
+        '<div class="fw__grid fw__grid--projects">' +
+          PROJECTS.map(card).join("") +
+        "</div>" +
+        '<div class="fw__footer">8 items</div>' +
       "</section>";
 
     modal.appendChild(backdrop);
@@ -498,12 +875,22 @@
     }
     backdrop.addEventListener("click", close);
     win.querySelector(".wl--close").addEventListener("click", close);
-    win.querySelector(".nw__back").addEventListener("click", close);
     document.addEventListener("keydown", onKey);
   }
 
-  widget.style.cursor = "pointer";
-  widget.addEventListener("click", open);
+  trigger.style.cursor = "pointer";
+  trigger.addEventListener("click", (e) => {
+    e.preventDefault();
+    open(trigger);
+  });
+
+  // "View All Projects" button in the home widget opens the same window
+  document.querySelectorAll(".pjw__viewall").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      open(btn);
+    });
+  });
 })();
 
 /* ===================== TOOLS MARQUEE ===================== */
@@ -613,9 +1000,12 @@
     return c;
   }
 
-  // static: show all logos once; they wrap into two rows
+  // single-row marquee: two identical sets → seamless loop
   viewport.innerHTML = "";
-  LOGOS.forEach((l) => viewport.appendChild(chip(l)));
+  const track = document.createElement("div");
+  track.className = "tools__track";
+  [0, 1].forEach(() => LOGOS.forEach((l) => track.appendChild(chip(l))));
+  viewport.appendChild(track);
 })();
 
 /* ===================== DOCK HOVER TOOLTIPS ===================== */
