@@ -2,11 +2,45 @@
 (function () {
   const screen = document.querySelector(".screen");
   if (!screen) return;
-  const DESIGN_W = 1440;
-  const DESIGN_H = 900;
+  screen.style.transform = "none"; // wallpaper stays full-bleed
 
-  // scene now fills the viewport directly — no scaling transform.
-  screen.style.transform = "none";
+  // Keep the widget columns fully above the dock (macOS behaviour): when the
+  // viewport is too short, scale each column down so nothing tucks under the dock.
+  const desktop = document.querySelector(".desktop");
+  const leftCol = document.querySelector(".widget-col--left");
+  const rightCol = document.querySelector(".widget-col--right");
+  const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+
+  function fit() {
+    // reset first so measurements aren't affected by a prior scale
+    [leftCol, rightCol].forEach((c) => {
+      if (c) c.style.transform = "none";
+    });
+    if (!desktop || isMobile()) return; // phone layout stacks + scrolls instead
+
+    const cs = getComputedStyle(desktop);
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const avail = desktop.clientHeight - padY;
+    const need = Math.max(
+      leftCol ? leftCol.offsetHeight : 0,
+      rightCol ? rightCol.offsetHeight : 0
+    );
+    if (need > avail && need > 0) {
+      const s = Math.max(0.5, avail / need);
+      if (leftCol) {
+        leftCol.style.transformOrigin = "top left";
+        leftCol.style.transform = "scale(" + s + ")";
+      }
+      if (rightCol) {
+        rightCol.style.transformOrigin = "top right";
+        rightCol.style.transform = "scale(" + s + ")";
+      }
+    }
+  }
+
+  fit();
+  window.addEventListener("resize", fit);
+  window.addEventListener("load", fit);
 })();
 
 /* ===================== iOS-STYLE ANALOG CLOCK ===================== */
@@ -431,7 +465,7 @@
     linkedin: S('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="7.6" cy="8" r="1.1" fill="currentColor" stroke="none"/><path d="M7.6 10.8v6.2"/><path d="M11 17v-6.2"/><path d="M11 13.3c.4-1 1.4-1.8 2.7-1.8 1.6 0 2.7 1.1 2.7 3V17"/>'),
     pin: S('<path d="M12 21c4-4 6.3-7.2 6.3-10.5a6.3 6.3 0 1 0-12.6 0C5.7 13.8 8 17 12 21z"/><circle cx="12" cy="10.4" r="2.3"/>'),
   };
-  const PORTFOLIO_URL = "https://ankurdbb32.github.io/Portfolio/";
+  const PORTFOLIO_URL = "https://monuprajapat.github.io/Portfolio/";
 
   // ---- content builders ----
   const P = (t) => '<p class="nw__p">' + t + "</p>";
@@ -476,82 +510,85 @@
   const CONTENT = {
     "About Me":
       '<h1 class="nw__h1">About Me</h1>' +
-      P(`Hello, I'm Ankur.`) +
-      P(`I'm a Senior Product Designer with 5+ years of experience creating digital products that balance user needs, business goals, and technical feasibility.`) +
-      P(`Over the years I've worked across enterprise software, insurance, fintech, hiring platforms, AI products, social media tools, and consumer applications, designing experiences that simplify complex workflows into intuitive interfaces.`) +
-      P(`My career began in software engineering, where I worked on Apple Maps. That experience fundamentally changed how I approach design. It taught me to understand systems before screens, logic before layouts, and scalability before aesthetics. Today I bridge the gap between design and development, making collaboration with engineers faster and more efficient.`) +
-      P(`Currently, I lead product design initiatives at Ensylon, designing enterprise solutions for EquiTrust and multiple internal products. My work spans product discovery, user research, information architecture, interaction design, design systems, prototyping, usability testing, and developer handoff.`) +
-      P(`I enjoy solving problems that most users never notice. Whether it's reducing the number of clicks required to complete a task, simplifying a complicated workflow, improving accessibility, or creating reusable design systems, I believe every small improvement contributes to a better overall experience.`) +
-      '<blockquote class="nw__quote">' + `"Design is not about making things look better. It's about making people's lives a little easier, one interaction at a time."` + "</blockquote>" +
+      P(`Hello, I'm Monu.`) +
+      P(`I'm a Full Stack Engineer and Tech Lead with 4+ years of experience building high-impact, enterprise-grade products end to end across the MERN / Node.js + React stack, with full ownership and accountability from concept to production.`) +
+      P(`I've shipped mission-critical, production-grade systems across inventory management, society management, gaming platforms, construction cost benchmarking, and solar analytics, translating ambiguous business requirements into clear technical roadmaps and predictable delivery.`) +
+      P(`As a core technical owner, I drive key system design and architecture decisions (API design, database schema, cloud infrastructure) that reduce technical risk and improve reliability, while mentoring engineers, setting coding standards, and enforcing CI/CD and Git best practices to maximize delivery velocity.`) +
+      P(`I enjoy the hard parts most users never see, whether it's a data ingestion pipeline that runs 14 days non-stop with zero data loss, a recursive parent-child cost verification engine, or a tariff engine for location-based rate structures. I believe every reliability and performance improvement compounds into a better product.`) +
+      '<blockquote class="nw__quote">' + `"Understand systems before screens, logic before layouts, and scalability before aesthetics."` + "</blockquote>" +
       HR +
-      H2(`My Design Philosophy`) +
-      P(`I don't design screens.`) +
-      P(`I design experiences.`) +
-      P(`A beautiful interface without usability is simply decoration. My goal is to create products that people understand instantly, enjoy using repeatedly, and trust over time.`) +
-      P(`I believe great design should feel invisible. Users shouldn't have to stop and think about where to click next. Every interaction should feel natural, predictable, and purposeful.`) +
-      P(`Good design answers three simple questions immediately:`) +
-      TAGS([`Where am I?`, `What can I do?`, `What happens next?`]) +
-      P(`If those questions aren't obvious, there's still work to do.`) +
+      H2(`My Engineering Philosophy`) +
+      P(`I don't just ship features.`) +
+      P(`I ship systems that scale.`) +
+      P(`Code that works today but can't be reasoned about tomorrow is technical debt in disguise. My goal is to build software that's reliable under load, easy to extend, and safe to change.`) +
+      P(`Every architecture decision should answer three questions clearly:`) +
+      TAGS([`Will it scale?`, `Can it fail safely?`, `Is it easy to change?`]) +
+      P(`If those aren't obvious, the design isn't done yet.`) +
       HR +
       H2(`How I Work`) +
-      P(`Every project begins with understanding the problem, not the interface.`) +
-      P(`My typical design process includes:`) +
-      TAGS([`Product Discovery`, `Stakeholder Workshops`, `User Interviews`, `Competitive Analysis`, `User Journey Mapping`, `Information Architecture`, `Wireframing`, `High Fidelity Design`, `Interactive Prototyping`, `Usability Testing`, `Design QA`, `Continuous Iteration`]) +
-      P(`I enjoy collaborating with product managers, developers, researchers, and business teams because the best products are never designed in isolation.`) +
+      P(`Every project begins with understanding the problem and the constraints, not the framework.`) +
+      P(`My typical delivery process includes:`) +
+      TAGS([`Requirement Discovery`, `Solution Architecture`, `System Design`, `API & Schema Design`, `Sprint Planning`, `Implementation`, `Code Reviews`, `CI/CD`, `Performance Tuning`, `Observability`, `Stakeholder Alignment`, `Continuous Iteration`]) +
+      P(`I work best as the client-facing technical lead, owning requirement discovery, architecture walkthroughs, and delivery across cross-functional engineering teams.`) +
       HR +
-      H2(`Areas I Love Designing`) +
-      TAGS([`Enterprise SaaS Products`, `AI Powered Experiences`, `Design Systems`, `Dashboard & Analytics`, `Productivity Applications`, `Mobile Apps`, `Web Platforms`, `Internal Business Tools`, `Data Heavy Interfaces`, `Workflow Optimisation`]) +
+      H2(`Areas I Love Building`) +
+      TAGS([`Enterprise SaaS`, `Microservices`, `Event-Driven Systems`, `Distributed Systems`, `REST & GraphQL APIs`, `Data Ingestion Pipelines`, `Real-Time Apps`, `Serverless on AWS`, `Payment Integrations`, `AI / LLM Integrations`]) +
       HR +
-      H2(`Beyond Design`) +
-      P(`Outside of client work, I'm constantly exploring emerging technologies and experimenting with new ways of building digital products.`) +
-      P(`I actively work with AI-assisted design workflows to accelerate ideation while maintaining high design quality:`) +
-      TAGS([`Claude`, `ChatGPT`, `Cursor`, `Lovable`, `V0`, `Stitch`, `UX Pilot`, `Readdy AI`]) +
-      P(`I'm also drawn to the space where design meets engineering:`) +
-      TAGS([`Design Engineering`, `Motion Design`, `Micro Interactions`, `Spatial Interfaces`, `Design + Code Collaboration`]) +
-      P(`Learning has become part of my daily routine because the design industry evolves quickly, and I believe curiosity is one of the most valuable skills a designer can have.`),
+      H2(`Beyond Work`) +
+      P(`Outside of client work, I explore emerging technologies and integrate AI into real product workflows.`) +
+      P(`I actively build with LLM and AI tooling:`) +
+      TAGS([`OpenAI`, `LLM APIs`, `Pinecone`, `Claude`, `ChatGPT`, `Cursor`]) +
+      P(`I'm most drawn to the space where architecture meets scale:`) +
+      TAGS([`System Design`, `Distributed Systems`, `Cloud Architecture`, `Performance Engineering`, `Developer Experience`]) +
+      P(`Learning is part of my daily routine, because the ecosystem evolves quickly and curiosity is one of the most valuable skills an engineer can have.`),
 
     "Professional Experience":
       '<h1 class="nw__h1">Professional Experience</h1>' +
-      JOB(`Senior UI/UX Designer, Ensylon, Jaipur`, `Jun 2025 - Present`, [`Leading end-to-end product design for EquiTrust's digital ecosystem, including the Quotient hiring platform and 4+ enterprise insurance tools across policy, retirement, and annuity workflows`, `Designed and optimized multi-step user journeys within the Quotient platform, covering candidate onboarding, profile creation, job workflows, and recruiter interactions`, `Delivered 30+ wireframes, user flows, and high-fidelity prototypes, reducing design iteration cycles by ~30% across stakeholder reviews`, `Conducted structured user research with 30+ participants in 2-week cycles, identifying usability gaps and improving task completion rates by ~25% across hiring and internal workflows`, `Built and scaled reusable design system components across hiring and insurance products, reducing design-to-development turnaround time by ~35%`, `Delivered developer-ready specifications, interaction states, and edge cases, improving implementation efficiency by ~34% and reducing rework`, `Collaborated with US-based stakeholders, product managers, and engineering teams to translate complex hiring and insurance requirements into scalable UX solutions`, `Contributed to product direction by presenting UX insights that influenced feature prioritization and roadmap decisions`]) +
-      JOB(`UI/UX Designer, Oolook, Jaipur`, `May 2023 - Apr 2025`, [`Designed end-to-end user experiences across web and mobile platforms, structuring core user journeys from onboarding to key feature interactions`, `Created scalable information architecture and interaction models, improving task completion rates by ~25% across primary user flows`, `Conducted usability testing and iterative design improvements, increasing user satisfaction by 15–20% based on feedback and usage patterns`, `Collaborated closely with product managers and engineers to translate requirements into feasible, high-quality design solutions`, `Delivered high-fidelity prototypes and developer-ready specifications, reducing ambiguity during implementation and improving delivery speed`, `Contributed to feature prioritization by leveraging user insights, aligning design decisions with business and product goals`]) +
-      JOB(`Software Development Engineer, Apple Maps Via ThoughtGenesis, Hyderabad`, `Jan 2022 - Jan 2023`, [`Improved map-based user experience by enhancing visualization logic for geographic data layers (e.g., water bodies) across multiple zoom levels`, `Designed and implemented data optimization pipelines, achieving ~487% improvement in data accuracy, consistency, and availability for map interfaces`, `Worked on system-level design for data-driven UI behavior, ensuring consistency and scalability across large datasets and edge cases`]),
+      JOB(`Sr. Full Stack Engineer, Eminence Technology`, `Apr 2024 - Present`, [`Serve as Full Stack Tech Lead and core technical owner for high-impact, enterprise-grade products, driving initiatives from concept to production across the MERN / Node.js + React stack with full ownership and accountability`, `Translate ambiguous business requirements into clear, actionable technical roadmaps, ensuring predictable delivery and high client confidence in Agile/Scrum environments`, `Act as primary client-facing technical lead, owning requirement discovery, solution architecture walkthroughs, sprint planning, and stakeholder alignment across cross-functional engineering teams`, `Consistently ship mission-critical, production-grade systems on time by balancing speed, code quality, and long-term scalability across microservices and distributed architectures`, `Drive key system design and architecture decisions (API design, database schema, cloud infrastructure) that reduce technical risk and improve reliability`, `Lead and mentor a team of full stack engineers, setting coding standards, conducting code reviews, and enforcing CI/CD and Git best practices to maximize delivery velocity`]) +
+      JOB(`Full Stack Engineer, FarmHeal`, `Mar 2022 - Apr 2024`, [`Led end-to-end development of client-facing full stack platforms, including an enterprise inventory management system and a society management solution using React, Node.js, AWS Lambda, API Gateway, and S3 in a serverless microservices architecture`, `Designed, built, and integrated scalable REST APIs with SSR and full-stack performance optimizations, reducing page load times by ~37%`, `Collaborated with cross-functional product, design, and QA teams in Agile/Scrum sprints to deliver high-availability full stack solutions for enterprise clients`]),
 
     "Internships":
       '<h1 class="nw__h1">Internships</h1>' +
-      JOB(`UI/UX Design Intern, BrainQuest (Remote)`, `Feb 2023 - Apr 2023`, [`Iterated on designs using stakeholder feedback and usage insights, improving clarity and efficiency across key financial interactions`, `Delivered end-to-end UX solutions across fintech and insurance workflows by aligning user needs, business requirements, and system constraints, contributing to scalable, conversion-focused product experiences`, `Built intuitive interfaces for financial dashboards, policy comparison views, and transaction tracking systems, improving usability of data-heavy and high-frequency workflows`]) +
-      JOB(`UI/UX Design Intern, Trumsy (Remote)`, `Apr 2021 - Dec 2021`, [`Owned the end-to-end design lifecycle for an EdTech startup's gamified learning platform for kids, translating complex user needs into intuitive UI flows and engaging learning experiences aligned with product KPIs`, `Collaborated closely with PMs and developers to define product features, apply usability best practices, and deliver high-impact design solutions under tight timelines.`]),
+      JOB(`Research Intern, Samsung R&D Institute`, `Aug 2021 - Mar 2022`, [`Developed a deep learning-based recommendation system using 10,000+ data samples for user classification (Samsung PenUp)`, `Applied data engineering and machine learning techniques to improve personalization accuracy`]),
+
+    "Projects":
+      '<h1 class="nw__h1">Projects</h1>' +
+      JOB(`Solar Calculator, Solar ROI & Analytics Platform`, ``, [`Engineered an end-to-end solar cost-benefit analysis platform, from data ingestion to ROI insights, for estimating energy production, costs, savings, and ROI prior to installation`, `Ingested and processed a full year of 15-minute interval usage data (~35,000 points) via the Smart Meter Texas (SMT) API`, `Built proprietary algorithms to track sun position and model shading, enabling precise, panel-specific production estimates`, `Developed a tariff engine for location-based rate structures and accurate cost modeling, and unified all data into a single cost-benefit engine with interactive battery and grid charts`]) +
+      JOB(`TruGamer, Unified Gaming Platform`, `Next.js · Strapi · PostgreSQL · AWS`, [`Engineered an IGDB game-data ingestion pipeline processing 350,000+ games with batching, rate limiting, and retry logic, sustaining a 14-day non-stop run with zero data loss; built a webhook pipeline for continuous game updates`, `Integrated Steam, Xbox, and PSN APIs with custom per-platform ID resolution, reducing sync to 4-6 API calls per platform per user`, `Implemented priority-queue scheduling and response caching for 700+ active users`]) +
+      JOB(`ICM, Intelligent Cost Manager (University of Melbourne)`, `Node.js · PostgreSQL · Supabase · React · Auth0`, [`Built a production-grade cost benchmarking platform managing construction project costs across an 8-level data hierarchy with real-time validation at every level`, `Designed a 26-table normalized PostgreSQL schema with recursive parent-child cost verification`, `Implemented role-based access control (Owner/Admin/Editor/Viewer) using Auth0, JWT, and org-level data isolation`]),
 
     "Skills":
       '<h1 class="nw__h1">Skills</h1>' +
-      H2(`Design`) +
-      TAGS([`User Experience (UX) Design`, `User Interface (UI) Design`, `Enterprise Product Design`, `SaaS Product Design`, `AI/LLM UX Design`, `Conversational UI Design`, `AI Copilot Experience Design`, `Prompt UX Design`, `Dashboard & Analytics Design`, `Data Visualization`, `Design Systems`, `Component Libraries`, `Information Architecture`, `User Research`, `User Journey Mapping`, `Wireframing`, `Prototyping`, `Interaction Design`, `Responsive Design`, `Mobile App Design`, `Web Application Design`, `Accessibility (WCAG)`, `Usability Testing`, `Design Thinking`, `Visual Design`, `Heuristic Evaluation`, `Design Strategy`, `UX Writing`, `User-Centered Design`]) +
+      H2(`Core Technologies`) +
+      TAGS([`Node.js`, `TypeScript`, `React`, `Next.js`, `GraphQL`, `REST APIs`, `Microservices`, `Event-Driven Architecture`, `Distributed Systems`, `System Design`, `Redis`, `WebSockets`, `WebRTC`, `MongoDB`, `PostgreSQL`, `Pinecone`, `API Design`, `Authentication (JWT, OAuth)`]) +
       HR +
-      H2(`Tools`) +
-      TAGS([`Figma`, `FigJam`, `Adobe XD`, `Photoshop`, `Illustrator`, `Miro`, `Jira`, `Confluence`, `Notion`, `Cursor`, `Lovable AI`, `V0 by Vercel`, `ChatGPT`, `Claude`, `Gemini`, `Stitch`, `UX Pilot`, `Readdy.ai`, `Wix`, `WordPress`, `Maze`, `Zeplin`, `Chrome DevTools`]) +
-      HR +
-      H2(`Development Collaboration`) +
-      TAGS([`HTML5`, `CSS3`, `JavaScript Fundamentals`, `Bootstrap`, `Responsive Web Design`, `Mobile-First Design`, `Design-to-Development Handoff`, `Figma Inspect`, `Component Libraries`, `Design Systems`, `Developer QA`, `Frontend Feasibility Review`, `Cross-Functional Collaboration`, `Agile/Scrum`, `Stakeholder Management`, `Product-Engineering Collaboration`]),
+      H2(`Cloud, DevOps & Integrations`) +
+      TAGS([`AWS (EC2, S3, Lambda, EKS, ECS, CloudWatch)`, `Serverless Architecture`, `Docker`, `CI/CD`, `NGINX`, `Firebase`, `Twilio`, `Stripe`, `Razorpay`, `PayPal`, `Paddle`, `OAuth (Google, Microsoft, Apple)`, `OpenAI`, `LLM APIs`, `Git`, `GitLab`, `Bitbucket`]),
+
+    "Education":
+      '<h1 class="nw__h1">Education</h1>' +
+      CARD(ICON.award, `Bachelor of Technology, Computer Science (CSE)`, `Chandigarh University · 2019 - 2023`, `CGPA: 7.89 / 10.0`) +
+      CARD(ICON.award, `CBSE Class XII`, `Prakash Public School, Karnal · 2019`, `95%`) +
+      CARD(ICON.award, `CBSE Class X`, `Prakash Public School, Karnal · 2017`, `CGPA: 9.80`) +
+      H2(`Languages`) +
+      TAGS([`Hindi (Upper Intermediate)`, `English (Upper Intermediate)`]),
 
     "Certifications":
       '<h1 class="nw__h1">Certifications</h1>' +
-      CARD(ICON.award, `Google UX Design Professional Certificate`, `Google`, ``) +
-      CARD(ICON.award, `Using AI in UX Design Process`, `LinkedIn Learning`, ``) +
-      H2(`Currently Learning`) +
-      TAGS([`AI Product Design`, `Motion Design`, `Design Engineering`]),
-
-    "POR":
-      '<h1 class="nw__h1">Positions of Responsibility</h1>' +
-      CARD(ICON.award, `Best Design Award`, `Design Rush · IIT BHU`, `Won among 1200+ participants for designing Trado, a Crypto Trading App.`) +
-      CARD(ICON.award, `Head Team Member`, `Design Fest · IIT Roorkee`, `Led the design team during the national design competition.`),
+      P(`Verified online courses & specializations I've completed on Coursera.`) +
+      CARD(ICON.award, `Machine Learning`, `Stanford Online · Coursera`, `<a class="nw__email" href="https://www.coursera.org/account/accomplishments/verify/PBNZUF4GMZ3P" target="_blank" rel="noopener">View Certificate ↗</a>`) +
+      CARD(ICON.award, `Blockchain Specialization`, `University at Buffalo & The State University of New York · Coursera`, `<a class="nw__email" href="https://www.coursera.org/account/accomplishments/specialization/XT2CZUVZM2HN" target="_blank" rel="noopener">View Certificate ↗</a>`) +
+      CARD(ICON.award, `Front-End Web Development with React`, `The Hong Kong University of Science and Technology · Coursera`, `<a class="nw__email" href="https://www.coursera.org/account/accomplishments/verify/X3YBVMXUZDNP" target="_blank" rel="noopener">View Certificate ↗</a>`) +
+      CARD(ICON.award, `Java for Android`, `Vanderbilt University · Coursera`, `<a class="nw__email" href="https://www.coursera.org/account/accomplishments/verify/ZK47BNK5FCH8" target="_blank" rel="noopener">View Certificate ↗</a>`) +
+      CARD(ICON.award, `Python Basics`, `University of Michigan · Coursera`, `<a class="nw__email" href="https://www.coursera.org/account/accomplishments/verify/2NUXVMW3L93K" target="_blank" rel="noopener">View Certificate ↗</a>`),
 
     "Contact":
       '<h1 class="nw__h1">Contact</h1>' +
       P(`Let's build something meaningful.`) +
       '<div class="nw__contacts">' +
-        CROW(ICON.mail, '<a class="nw__email" href="mailto:ankurmeena194@gmail.com">ankurmeena194@gmail.com</a>') +
-        CROW(ICON.globe, '<a class="nw__email" href="' + PORTFOLIO_URL + '" target="_blank" rel="noopener">Portfolio</a>') +
-        CROW(ICON.linkedin, '<a class="nw__email" href="https://www.linkedin.com/in/" target="_blank" rel="noopener">LinkedIn</a>') +
-        CROW(ICON.pin, "Jaipur, India") +
+        CROW(ICON.mail, '<a class="nw__email" href="mailto:monuprajapat6270@gmail.com">monuprajapat6270@gmail.com</a>') +
+        CROW(ICON.linkedin, '<a class="nw__email" href="https://www.linkedin.com/in/monuprajapat/" target="_blank" rel="noopener">linkedin.com/in/monuprajapat</a>') +
+        CROW(ICON.pin, '<a class="nw__email" href="tel:+919996105221">+91-9996105221</a>') +
       "</div>",
   };
   const TABS = Object.keys(CONTENT);
@@ -569,14 +606,18 @@
     const win = document.createElement("div");
     win.className = "noteswin";
     win.style.transformOrigin = ox + "px " + oy + "px";
-    // masked placeholder rows (do NOT embed real secrets in a public site)
-    const rows = Array.from({ length: 10 }, () => "<tr><td>•••••–••••</td></tr>").join("");
+    // traffic-light glyphs (shown on hover, macOS-style)
+    const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+    const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+    const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+    const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
     win.innerHTML =
       '<aside class="nw__sidebar">' +
         '<div class="nw__side-top">' +
           '<div class="nw__lights">' +
-            '<button class="wl wl--close" aria-label="Close"></button>' +
-            '<span class="wl wl--min"></span><span class="wl wl--max"></span>' +
+            '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+            '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+            '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
           "</div>" +
         "</div>" +
         '<ul class="nw__folders">' +
@@ -588,7 +629,7 @@
       "</aside>" +
       '<section class="nw__main">' +
         '<header class="nw__toolbar">' +
-          '<div class="nw__title"><div class="nw__title-main">All on My Mac</div><div class="nw__title-sub">10 notes</div></div>' +
+          '<div class="nw__title"><div class="nw__title-main">All on My Mac</div><div class="nw__title-sub">8 notes</div></div>' +
           '<button class="nw__circ" aria-label="Share">' + ICON.share + "</button>" +
           '<div class="nw__search">' + ICON.search + "<span>Search</span></div>" +
         "</header>" +
@@ -613,6 +654,14 @@
     }
     backdrop.addEventListener("click", close);
     win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("noteswin--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
     const backBtn = win.querySelector(".nw__back");
     if (backBtn) backBtn.addEventListener("click", close);
     document.addEventListener("keydown", onKey);
@@ -737,8 +786,9 @@
     '<path d="M4 12a4 4 0 0 1 4-4h18l6 6h36a4 4 0 0 1 4 4v4H4z" fill="url(#fwBack)"/>' +
     '<path d="M4 17h72a4 4 0 0 1 4 4v29a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="url(#fwFront)"/></svg>';
 
-  const item = (icon, label, cls) =>
-    '<div class="fw__item' + (cls ? " " + cls : "") + '">' +
+  const item = (icon, label, cls, group) =>
+    '<div class="fw__item' + (cls ? " " + cls : "") + '"' +
+    (group ? ' data-group="' + group + '"' : "") + ">" +
     '<span class="fw__item-ic">' + icon + "</span>" +
     '<span class="fw__item-label">' + label + "</span></div>";
   const tag = (color, label) =>
@@ -775,43 +825,145 @@
   };
 
   const PROJECTS = [
-    { title: "Lumina UX", cat: "AI Healthcare Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#dbe7f7)", tags: [["Enterprise", "green"], ["AI", "purple"]], mi: "mon", mt: "12 Screens", yr: "2026" },
-    { title: "Nexus Banking", cat: "Banking & FinTech Platform", badge: "Case Study", bc: "case", theme: "dark", grad: "linear-gradient(135deg,#1b1a2e,#242346)", tags: [["Enterprise", "green"], ["FinTech", "blue"]], mi: "mon", mt: "18 Screens", yr: "2026" },
-    { title: "EquiTrust Platform", cat: "Insurance & Annuity Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#e2ecf8)", tags: [["Enterprise", "green"], ["Insurance", "orange"]], mi: "mon", mt: "24 Screens", yr: "2025" },
-    { title: "Oolook", cat: "AI Social Media Platform", badge: "Live", bc: "live", theme: "light", grad: "linear-gradient(135deg,#f0ecfb,#e5def7)", tags: [["SaaS", "teal"], ["AI", "purple"]], mi: "mon", mt: "15 Screens", yr: "2025" },
-    { title: "Apple Maps (via TG)", cat: "Data Visualization & Maps", badge: "Archive", bc: "archive", theme: "dark", grad: "linear-gradient(135deg,#0f1420,#1b2436)", tags: [["System Design", "green"], ["Maps", "gray"]], mi: "mon", mt: "10 Screens", yr: "2023" },
-    { title: "Quotient Hiring", cat: "Recruitment Platform", badge: "Case Study", bc: "case", theme: "light", grad: "linear-gradient(135deg,#eef3fb,#dfe9f7)", tags: [["Enterprise", "green"], ["HR Tech", "blue"]], mi: "mon", mt: "14 Screens", yr: "2025" },
-    { title: "Ensylon Design System", cat: "Design System & Components", badge: "System", bc: "system", theme: "dark", grad: "linear-gradient(135deg,#151521,#20202f)", tags: [["Internal", "green"], ["Design System", "gray"]], mi: "stack", mt: "120+ Components", yr: "2025" },
-    { featured: true, title: "Company Assignments", cat: "Projects & Tasks at Ensylon", badge: "Featured", bc: "featured", tags: [["Internal", "green"], ["Assignments", "gray"]], mi: "mon", mt: "Various", yr: "Ongoing" },
+    // ---- Featured (live, real screenshots) ----
+    { group: "featured", title: "TruGamer", cat: "Unified Gaming Platform", url: "https://trugamer.com/", img: "proj-trugamer.jpg", badge: "Live", bc: "live", tags: [["Next.js", "blue"], ["IGDB API", "purple"]], mi: "mon", mt: "350K+ Games", yr: "2025",
+      desc: "A unified gaming platform that pulls games, news, and release calendars from Steam, Xbox, and PSN into a single hub.",
+      stack: ["Next.js", "Node.js", "Strapi", "PostgreSQL", "Redis", "AWS", "IGDB API"],
+      highlights: ["Built an IGDB ingestion pipeline for 350K+ games with batching, rate-limiting & retries — a 14-day non-stop run with zero data loss", "Integrated Steam/Xbox/PSN APIs with per-platform ID resolution (4–6 calls per platform per user)", "Priority-queue scheduling & response caching for 700+ active users"] },
+    { group: "featured", title: "Jigawatt", cat: "Solar Design & Analytics Platform", url: "https://jigawatt.solar/", img: "proj-jigawatt.jpg", badge: "Live", bc: "live", tags: [["Node.js", "green"], ["Data Viz", "teal"]], mi: "mon", mt: "Solar ROI", yr: "2025",
+      desc: "A solar cost-benefit platform that estimates energy production, savings, and ROI before installation.",
+      stack: ["Node.js", "React", "PostgreSQL", "SMT API", "Chart.js", "AWS"],
+      highlights: ["Ingested a full year of 15-minute interval usage data (~35K points) via the Smart Meter Texas API", "Built sun-position & shading algorithms for panel-specific production estimates", "Location-based tariff engine unified into a single cost-benefit engine with interactive charts"] },
+    { group: "featured", title: "ICM", cat: "Intelligent Cost Manager", url: "https://icm.in/", img: "proj-icm.jpg", badge: "Live", bc: "live", tags: [["PostgreSQL", "blue"], ["Auth0", "orange"]], mi: "stack", mt: "8-Level Hierarchy", yr: "2024",
+      desc: "A production-grade construction cost-benchmarking platform built for the University of Melbourne.",
+      stack: ["Node.js", "React", "PostgreSQL", "Supabase", "Auth0", "AWS"],
+      highlights: ["Managed project costs across an 8-level data hierarchy with real-time validation at every level", "Designed a 26-table normalized schema with recursive parent-child cost verification", "Role-based access (Owner/Admin/Editor/Viewer) via Auth0 with org-level data isolation"] },
+
+    // ---- AI / ML ----
+    { group: "ai", title: "DocuMind AI", cat: "RAG Document Assistant", badge: "Live", bc: "live", tags: [["OpenAI", "purple"], ["Pinecone", "blue"]], mi: "stack", mt: "Vector Search", yr: "2025",
+      desc: "A retrieval-augmented assistant that answers questions over private document sets with cited sources.",
+      stack: ["Node.js", "React", "OpenAI", "Pinecone", "LangChain", "MongoDB"],
+      highlights: ["Chunking + embedding pipeline with semantic vector search over Pinecone", "Streaming answers with inline source citations", "Per-workspace document isolation & access control"] },
+    { group: "ai", title: "SupportGenie", cat: "AI Customer-Support Copilot", badge: "Live", bc: "live", tags: [["LLM APIs", "purple"], ["React", "teal"]], mi: "mon", mt: "Streaming Chat", yr: "2024",
+      desc: "An AI copilot that drafts support replies from a knowledge base and past ticket history.",
+      stack: ["React", "Node.js", "LLM APIs", "Redis", "WebSockets", "PostgreSQL"],
+      highlights: ["Streaming chat with tool-calling and knowledge-base retrieval", "Tone & brand-voice controls for generated replies", "Human-in-the-loop approval before sending"] },
+    { group: "ai", title: "SmartRecs", cat: "Personalized Recommendation Engine", badge: "Case Study", bc: "case", tags: [["Node.js", "green"], ["ML", "purple"]], mi: "stack", mt: "Real-Time", yr: "2024",
+      desc: "A recommendation engine serving real-time personalized suggestions across a product catalog.",
+      stack: ["Node.js", "Python", "Redis", "PostgreSQL", "scikit-learn"],
+      highlights: ["Hybrid collaborative + content-based scoring", "Real-time feature store backed by Redis", "Built-in A/B testing framework to measure lift"] },
+
+    // ---- Cloud & DevOps ----
+    { group: "devops", title: "DeployHub", cat: "CI/CD Pipeline Automation", badge: "Live", bc: "live", tags: [["GitHub Actions", "gray"], ["Docker", "blue"]], mi: "stack", mt: "EC2 · Zero-Downtime", yr: "2025",
+      desc: "A CI/CD setup that builds, tests, and ships to AWS EC2 with zero-downtime releases.",
+      stack: ["GitHub Actions", "Docker", "AWS EC2", "NGINX", "PM2", "Bash"],
+      highlights: ["Multi-stage Docker builds with layer caching to cut build times", "Blue-green deploys to EC2 behind NGINX for zero downtime", "Automated rollback on failed health checks"] },
+    { group: "devops", title: "InfraStack", cat: "Infrastructure as Code", badge: "Live", bc: "live", tags: [["Terraform", "purple"], ["AWS ECS", "orange"]], mi: "stack", mt: "Auto-Scaling", yr: "2024",
+      desc: "Infrastructure-as-Code that provisions containerized services with auto-scaling.",
+      stack: ["Terraform", "AWS ECS", "ECR", "CloudFormation", "IAM"],
+      highlights: ["Reproducible environments via reusable Terraform modules", "ECS services with CPU/memory-based auto-scaling policies", "Least-privilege IAM roles and managed secrets"] },
+    { group: "devops", title: "MetricPulse", cat: "Observability & Monitoring", badge: "Live", bc: "live", tags: [["CloudWatch", "orange"], ["Grafana", "teal"]], mi: "mon", mt: "Live Dashboards", yr: "2024",
+      desc: "An observability stack with live dashboards, centralized logs, and alerting.",
+      stack: ["Node.js", "CloudWatch", "Grafana", "Prometheus", "Docker"],
+      highlights: ["Custom application metrics with CloudWatch alarms", "Grafana dashboards for latency and error rates", "SLO-based alerting to on-call channels"] },
+
+    // ---- Mobile Apps ----
+    { group: "mobile", title: "FitTrack", cat: "Fitness & Activity Tracker", badge: "Live", bc: "live", tags: [["React Native", "teal"], ["Node.js", "green"]], mi: "mon", mt: "iOS · Android", yr: "2025",
+      desc: "A cross-platform fitness tracker with workouts, streaks, and progress charts.",
+      stack: ["React Native", "Expo", "Node.js", "MongoDB", "Firebase"],
+      highlights: ["Offline-first storage with background sync", "Push notifications to keep workout streaks alive", "Progress and health-data visualizations"] },
+    { group: "mobile", title: "SplitEase", cat: "Expense Splitting App", badge: "Live", bc: "live", tags: [["React Native", "teal"], ["MongoDB", "green"]], mi: "mon", mt: "Realtime Sync", yr: "2024",
+      desc: "A group expense-splitting app with realtime balances and settle-ups.",
+      stack: ["React Native", "Node.js", "MongoDB", "Socket.io"],
+      highlights: ["Realtime shared ledgers across group members", "Smart settle-up suggestions to minimize transfers", "Multi-currency support"] },
+    { group: "mobile", title: "ChatWave", cat: "Realtime Messaging App", badge: "Live", bc: "live", tags: [["WebSockets", "blue"], ["Expo", "gray"]], mi: "mon", mt: "E2E Encrypted", yr: "2024",
+      desc: "A realtime messaging app with media sharing, presence, and end-to-end encryption.",
+      stack: ["React Native", "Node.js", "WebSockets", "Redis"],
+      highlights: ["1:1 and group chats with typing & presence indicators", "End-to-end encrypted messages", "Media sharing with push notifications"] },
+
+    // ---- Web Apps (MERN) ----
+    { group: "web", title: "TaskFlow", cat: "Project Management SaaS", badge: "Live", bc: "live", tags: [["React", "teal"], ["MongoDB", "green"]], mi: "mon", mt: "Kanban · Teams", yr: "2025",
+      desc: "A project-management SaaS with boards, teams, and realtime collaboration.",
+      stack: ["React", "Node.js", "MongoDB", "Socket.io", "Redis"],
+      highlights: ["Kanban boards with drag-and-drop", "Realtime collaboration and an activity feed", "Role-based team workspaces"] },
+    { group: "web", title: "ShopSphere", cat: "E-Commerce Platform", badge: "Live", bc: "live", tags: [["MERN", "blue"], ["Stripe", "purple"]], mi: "stack", mt: "Payments", yr: "2024",
+      desc: "A full-featured e-commerce platform with payments and an admin dashboard.",
+      stack: ["React", "Node.js", "MongoDB", "Stripe", "Redis"],
+      highlights: ["Cart, checkout & Stripe payment integration", "Admin dashboard for catalog and orders", "Search, filters, and inventory management"] },
+    { group: "web", title: "MeetSync", cat: "Video Conferencing App", badge: "Live", bc: "live", tags: [["WebRTC", "blue"], ["Socket.io", "gray"]], mi: "mon", mt: "HD Video", yr: "2024",
+      desc: "A browser-based video conferencing app with screen share and in-call chat.",
+      stack: ["React", "Node.js", "WebRTC", "Socket.io"],
+      highlights: ["HD multi-party video powered by WebRTC", "Screen sharing and in-call chat", "Shareable room links with a waiting room"] },
   ];
 
-  function card(p) {
+  // gradient headers for the detail page of imageless projects
+  const GROUP_GRAD = {
+    ai: "linear-gradient(135deg,#3a2b6e,#7c3aed)",
+    devops: "linear-gradient(135deg,#12212e,#1f6f8b)",
+    mobile: "linear-gradient(135deg,#1b4d2f,#2f9d5a)",
+    web: "linear-gradient(135deg,#1b2a6e,#4059d0)",
+    featured: "linear-gradient(135deg,#333,#555)",
+  };
+
+  function card(p, i) {
     const tags = p.tags
       .map((t) => '<span class="pj__tag pj__tag--' + t[1] + '">' + t[0] + "</span>")
       .join("");
-    const thumb = p.featured
-      ? '<div class="pj__thumb pj__thumb--feat">' +
-          '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span>" +
-          '<div class="pj__feat"><div><div class="pj__feat-name">Ankur<br>Meena</div>' +
-          '<div class="pj__feat-role">Product Designer</div>' +
-          '<div class="pj__feat-desc">Designing meaningful experiences that solve real problems.</div></div>' +
-          '<div class="pj__feat-av">' + AVATAR + "</div></div></div>"
-      : '<div class="pj__thumb pj__thumb--' + p.theme + '" style="background:' + p.grad + '">' +
-          MOCK(p.theme) +
-          '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span></div>";
+    // only Featured projects show an image; others are clean info cards
+    const thumb = p.img
+      ? '<div class="pj__thumb" style="background:url(\'' + p.img + "') center / cover\">" +
+          '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span></div>"
+      : "";
+    const isLink = !!p.url;
+    const openTag = isLink
+      ? '<a class="pj" data-i="' + i + '" href="' + p.url + '" target="_blank" rel="noopener">'
+      : '<div class="pj" data-i="' + i + '">';
+    const closeTag = isLink ? "</a>" : "</div>";
     return (
-      '<div class="pj">' + thumb +
+      openTag + thumb +
         '<div class="pj__body">' +
           '<div class="pj__row">' + MINIFOLDER +
             '<span class="pj__title">' + p.title + "</span>" +
+            (p.img ? "" : '<span class="pj__badge-inline pj__badge--' + p.bc + '">' + p.badge + "</span>") +
             '<button class="pj__star">' + M.star + "</button></div>" +
           '<div class="pj__cat">' + p.cat + "</div>" +
           '<div class="pj__tags">' + tags + "</div>" +
           '<div class="pj__meta">' +
             '<span class="pj__metaitem">' + M[p.mi] + p.mt + "</span>" +
             '<span class="pj__metaitem">' + M.cal + p.yr + "</span>" +
-            '<button class="pj__more">' + M.more + "</button></div>" +
-        "</div></div>"
+            '<button class="pj__more" aria-label="Options">' + M.more + "</button></div>" +
+        "</div>" + closeTag
+    );
+  }
+
+  // full detail "page" shown when a card's ⋯ → View Details is chosen
+  function detailHTML(p) {
+    const chips = (p.stack || [])
+      .map((s) => '<span class="pj__chip">' + s + "</span>")
+      .join("");
+    const hl = (p.highlights || [])
+      .map((h) => "<li>" + h + "</li>")
+      .join("");
+    const hero = p.img
+      ? '<div class="pjd__hero" style="background:url(\'' + p.img + "') center / cover\"></div>"
+      : '<div class="pjd__hero" style="background:' + (GROUP_GRAD[p.group] || GROUP_GRAD.featured) + '">' +
+          '<span class="pjd__hero-title">' + p.title + "</span></div>";
+    return (
+      '<div class="pjd">' + hero +
+        '<div class="pjd__info">' +
+          '<div class="pjd__head"><h2 class="pjd__title">' + p.title + "</h2>" +
+            '<span class="pj__badge-inline pj__badge--' + p.bc + '">' + p.badge + "</span></div>" +
+          '<div class="pjd__cat">' + p.cat + "</div>" +
+          (p.desc ? '<p class="pjd__desc">' + p.desc + "</p>" : "") +
+          (chips ? '<div class="pj__dlabel">Tech Stack</div><div class="pj__stack">' + chips + "</div>" : "") +
+          (hl ? '<div class="pj__dlabel">What I built</div><ul class="pj__hl">' + hl + "</ul>" : "") +
+          '<div class="pjd__foot">' +
+            '<span class="pjd__meta-item">' + M[p.mi] + p.mt + "</span>" +
+            '<span class="pjd__meta-item">' + M.cal + p.yr + "</span>" +
+            (p.url ? '<a class="pjd__visit" href="' + p.url + '" target="_blank" rel="noopener">Visit Live Site ↗</a>' : "") +
+          "</div>" +
+        "</div>" +
+      "</div>"
     );
   }
 
@@ -828,34 +980,40 @@
     const win = document.createElement("div");
     win.className = "finderwin";
     win.style.transformOrigin = ox + "px " + oy + "px";
+    // traffic-light glyphs (shown on hover, macOS-style)
+    const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+    const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+    const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+    const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
     win.innerHTML =
       '<aside class="fw__sidebar">' +
         '<div class="fw__side-top"><div class="winmodal__lights">' +
-          '<button class="wl wl--close" aria-label="Close"></button>' +
-          '<span class="wl wl--min"></span><span class="wl wl--max"></span>' +
+          '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+          '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+          '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
         "</div></div>" +
         '<div class="fw__list">' +
-          item(I.recents, "Recents", "fw__item--active") +
-          item(I.shared, "Shared") +
+          item(I.recents, "Recents", "fw__item--active", "all") +
           '<div class="fw__section">Portfolio</div>' +
-          item(I.grid, "Featured Projects") +
-          item(I.briefcase, "Assignments") +
-          item(I.robot, "AI Products") +
-          item(I.layers, "Design Systems") +
-          item(I.phone, "Mobile Apps") +
-          item(I.web, "Web Apps") +
-        "</aside>" +
+          item(I.grid, "Featured Projects", "", "featured") +
+          item(I.robot, "AI / ML", "", "ai") +
+          item(I.layers, "Cloud & DevOps", "", "devops") +
+          item(I.phone, "Mobile Apps", "", "mobile") +
+          item(I.web, "Web Apps", "", "web") +
+        "</div></aside>" +
       '<section class="fw__main">' +
         '<header class="fw__toolbar">' +
+          '<button class="fw__back" style="display:none" aria-label="Back">' + T.back + "</button>" +
           '<div class="fw__titles"><div class="fw__title">Recents</div>' +
-            '<div class="fw__subtitle">8 items, 5 Folders</div></div>' +
+            '<div class="fw__subtitle">3 items</div></div>' +
           '<button class="nw__circ">' + T.share + "</button>" +
           '<div class="nw__search">' + T.search + "<span>Search</span></div>" +
         "</header>" +
         '<div class="fw__grid fw__grid--projects">' +
           PROJECTS.map(card).join("") +
         "</div>" +
-        '<div class="fw__footer">8 items</div>' +
+        '<div class="fw__detail" style="display:none"></div>' +
+        '<div class="fw__footer">3 items</div>' +
       "</section>";
 
     modal.appendChild(backdrop);
@@ -875,7 +1033,103 @@
     }
     backdrop.addEventListener("click", close);
     win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("finderwin--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
     document.addEventListener("keydown", onKey);
+
+    // ---- sidebar filtering + ⋯ menu + detail drill-in ----
+    const grid = win.querySelector(".fw__grid--projects");
+    const detailEl = win.querySelector(".fw__detail");
+    const backBtn = win.querySelector(".fw__back");
+    const titleEl = win.querySelector(".fw__title");
+    const subEl = win.querySelector(".fw__subtitle");
+    const footEl = win.querySelector(".fw__footer");
+    const navItems = [...win.querySelectorAll(".fw__item[data-group]")];
+    const state = { group: "all", label: "Recents", list: PROJECTS };
+
+    function renderGroup(group, label) {
+      state.group = group;
+      state.label = label;
+      state.list = group === "all" ? PROJECTS : PROJECTS.filter((p) => p.group === group);
+      grid.innerHTML = state.list.map((p, i) => card(p, i)).join("");
+      titleEl.textContent = label;
+      const n = state.list.length;
+      const count = n + (n === 1 ? " item" : " items");
+      subEl.textContent = count;
+      footEl.textContent = count;
+      // back to the list view
+      detailEl.style.display = "none";
+      grid.style.display = "";
+      footEl.style.display = "";
+      backBtn.style.display = "none";
+      grid.scrollTop = 0;
+    }
+
+    function showDetail(p) {
+      detailEl.innerHTML = detailHTML(p);
+      grid.style.display = "none";
+      footEl.style.display = "none";
+      detailEl.style.display = "block";
+      backBtn.style.display = "inline-flex";
+      titleEl.textContent = p.title;
+      subEl.textContent = p.cat;
+      detailEl.scrollTop = 0;
+    }
+
+    navItems.forEach((it) =>
+      it.addEventListener("click", () => {
+        navItems.forEach((x) => x.classList.remove("fw__item--active"));
+        it.classList.add("fw__item--active");
+        renderGroup(it.dataset.group, it.querySelector(".fw__item-label").textContent);
+      })
+    );
+    backBtn.addEventListener("click", () => renderGroup(state.group, state.label));
+
+    // ⋯ → small menu ("View Details" / "Open Live Site")
+    let menuEl = null;
+    function closeMenu() {
+      if (menuEl) { menuEl.remove(); menuEl = null; }
+      document.removeEventListener("click", onDocClick);
+    }
+    function onDocClick(e) {
+      if (menuEl && !menuEl.contains(e.target)) closeMenu();
+    }
+    grid.addEventListener("click", (e) => {
+      const moreBtn = e.target.closest(".pj__more");
+      if (!moreBtn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const cardEl = moreBtn.closest(".pj");
+      const p = cardEl && state.list[+cardEl.dataset.i];
+      if (!p) return;
+      closeMenu();
+      menuEl = document.createElement("div");
+      menuEl.className = "pj__menu";
+      menuEl.innerHTML =
+        '<button class="pj__menu-item" data-act="details">View Details</button>' +
+        (p.url ? '<button class="pj__menu-item" data-act="site">Open Live Site</button>' : "");
+      // fixed to the viewport (body child) so it isn't clipped and positions reliably
+      document.body.appendChild(menuEl);
+      const br = moreBtn.getBoundingClientRect();
+      menuEl.style.top = br.bottom + 6 + "px";
+      menuEl.style.left = Math.max(8, br.right - 172) + "px";
+      menuEl.addEventListener("click", (ev) => {
+        const btn = ev.target.closest(".pj__menu-item");
+        if (!btn) return;
+        if (btn.dataset.act === "details") showDetail(p);
+        else if (btn.dataset.act === "site" && p.url) window.open(p.url, "_blank", "noopener");
+        closeMenu();
+      });
+      setTimeout(() => document.addEventListener("click", onDocClick), 0);
+    });
+
+    renderGroup("all", "Recents");
   }
 
   trigger.style.cursor = "pointer";
@@ -1018,10 +1272,11 @@
     "dock__app--finder": "Projects",
     "dock__app--notes": "About Me",
     "dock__app--music": "Music",
+    "dock__app--settings": "System Settings",
     "dock__app--acrobat": "Resume",
     "dock__app--mail": "Contact Me",
     "dock__app--linkedin": "LinkedIn",
-    "dock__app--behance": "Naukri",
+    "dock__app--github": "GitHub",
   };
 
   const tip = document.createElement("div");
@@ -1129,5 +1384,513 @@
         .querySelectorAll("i")
         .forEach((bar) => (bar.style.animationPlayState = playing ? "running" : "paused"));
     }
+  });
+})();
+
+/* ===================== MUSIC → GENERATIVE LO-FI PLAYER ===================== */
+(function () {
+  const trigger = document.querySelector(".dock__app--music");
+  const screen = document.querySelector(".screen");
+  if (!trigger || !screen) return;
+
+  // ---- traffic-light glyphs (match the other windows) ----
+  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
+
+  // ---- transport glyphs ----
+  const PLAY = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>';
+  const PAUSE = '<svg class="music__glyph" viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.6" height="13" rx="1.2"/><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.2"/></svg>';
+  const PREV = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M18 6 10 12 18 18Z"/><rect x="6.4" y="6" width="2.4" height="12" rx="1"/></svg>';
+  const NEXT = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M6 6 14 12 6 18Z"/><rect x="15.2" y="6" width="2.4" height="12" rx="1"/></svg>';
+
+  // ---- "tracks" = generative moods (chords are semitone offsets from root) ----
+  const TRACKS = [
+    { name: "Midnight Study", artist: "Lo-Fi · Generative", bpm: 72, root: 220.0, wave: "sine",
+      chords: [[0, 3, 7, 10], [-2, 3, 5, 10], [-4, 0, 3, 7], [-5, -2, 2, 5]], rain: false },
+    { name: "Rainy Focus", artist: "Lo-Fi · Generative", bpm: 66, root: 196.0, wave: "triangle",
+      chords: [[0, 3, 7, 10], [5, 8, 12, 15], [-2, 2, 5, 9], [-4, 0, 3, 7]], rain: true },
+    { name: "Sunday Coding", artist: "Lo-Fi · Generative", bpm: 78, root: 261.63, wave: "sine",
+      chords: [[0, 4, 7, 11], [-3, 2, 5, 9], [-5, 0, 4, 7], [2, 5, 9, 12]], rain: false },
+  ];
+
+  const mtof = (root, semis) => root * Math.pow(2, semis / 12);
+
+  let win = null; // guard against multiple windows
+  // audio state (single window at a time)
+  let actx, master, analyser, freqData, NOISE, vol = 0.6;
+  let playing = false, cur = 0, step = 0, nextT = 0;
+  let sched = null, rafId = null, elapsed = 0, elapsedTimer = null;
+  let crackle = null, rain = null;
+
+  function noiseBuffer() {
+    const len = actx.sampleRate * 2;
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  function noiseLayer(type, cutoff, gainVal) {
+    const src = actx.createBufferSource();
+    src.buffer = NOISE; src.loop = true;
+    const f = actx.createBiquadFilter(); f.type = type; f.frequency.value = cutoff;
+    const g = actx.createGain(); g.gain.value = gainVal;
+    src.connect(f).connect(g).connect(master);
+    src.start();
+    return { src, g };
+  }
+  function stopLayer(layer) {
+    if (!layer) return;
+    try { layer.src.stop(); } catch (e) {}
+  }
+  function kick(t) {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(130, t);
+    o.frequency.exponentialRampToValueAtTime(48, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.9, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    o.connect(g).connect(master);
+    o.start(t); o.stop(t + 0.34);
+  }
+  function hat(t, vel) {
+    const src = actx.createBufferSource(); src.buffer = NOISE;
+    const hp = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 7000;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vel, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    src.connect(hp).connect(g).connect(master);
+    src.start(t); src.stop(t + 0.06);
+  }
+  function pad(t, freqs, dur) {
+    const g = actx.createGain();
+    const lp = actx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1900; lp.Q.value = 0.6;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.15, t + 0.6);
+    g.gain.setValueAtTime(0.15, t + Math.max(0.7, dur - 0.8));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator();
+      o.type = TRACKS[cur].wave;
+      o.frequency.value = f;
+      o.detune.value = (i - 1.5) * 4;
+      o.connect(g);
+      o.start(t); o.stop(t + dur + 0.05);
+    });
+    g.connect(lp).connect(master);
+  }
+
+  function scheduleStep(s, t) {
+    const T = TRACKS[cur];
+    const secPer8th = (60 / T.bpm) / 2;
+    const e = s % 8;                 // eighth-note within the bar
+    const bar = Math.floor(s / 8);
+    if (e === 0) {
+      const chord = T.chords[bar % T.chords.length].map((n) => mtof(T.root, n));
+      pad(t, chord, secPer8th * 8);  // sustain the chord across the bar
+      kick(t);
+    }
+    if (e === 4) kick(t);
+    if (e % 2 === 1) hat(t, 0.08);        // off-beat hats give the groove
+    else if (e !== 0 && e !== 4) hat(t, 0.045);
+  }
+  function scheduler() {
+    while (nextT < actx.currentTime + 0.12) {
+      scheduleStep(step, nextT);
+      nextT += (60 / TRACKS[cur].bpm) / 2;
+      step++;
+    }
+  }
+
+  function ensureAudio() {
+    if (actx) return;
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    master = actx.createGain(); master.gain.value = vol;
+    analyser = actx.createAnalyser(); analyser.fftSize = 128;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    master.connect(analyser).connect(actx.destination);
+    NOISE = noiseBuffer();
+    crackle = noiseLayer("highpass", 5200, 0.012);   // subtle vinyl hiss
+  }
+
+  function draw(bars) {
+    analyser.getByteFrequencyData(freqData);
+    const n = bars.length, half = freqData.length;
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(((i + 1) / n) * half);
+      const v = freqData[Math.min(idx, half - 1)] / 255;
+      bars[i].style.transform = "scaleY(" + (0.1 + v * 1.05).toFixed(3) + ")";
+    }
+    rafId = requestAnimationFrame(() => draw(bars));
+  }
+
+  const fmt = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+
+  function open(originEl) {
+    if (win) return;
+    const sRect = screen.getBoundingClientRect();
+    const r = (originEl || trigger).getBoundingClientRect();
+    const ox = r.left + r.width / 2 - sRect.left;
+    const oy = r.top + r.height / 2 - sRect.top;
+
+    const modal = document.createElement("div");
+    modal.className = "winmodal";
+    const backdrop = document.createElement("div");
+    backdrop.className = "winmodal__backdrop";
+    win = document.createElement("div");
+    win.className = "winmodal__window musicwin";
+    win.style.transformOrigin = ox + "px " + oy + "px";
+
+    const EQ = Array.from({ length: 14 }, () => '<i class="music__bar"></i>').join("");
+    win.innerHTML =
+      '<div class="winmodal__bar">' +
+        '<div class="winmodal__lights">' +
+          '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+          '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+          '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
+        "</div>" +
+        '<span class="winmodal__title">Music</span>' +
+      "</div>" +
+      '<div class="winmodal__body">' +
+        '<div class="music" data-track="0">' +
+          '<div class="music__art"><span class="music__label"></span></div>' +
+          '<div class="music__meta">' +
+            '<div class="music__track"></div>' +
+            '<div class="music__artist"></div>' +
+          "</div>" +
+          '<div class="music__eq">' + EQ + "</div>" +
+          '<div class="music__controls">' +
+            '<button class="music__btn music__prev" aria-label="Previous">' + PREV + "</button>" +
+            '<button class="music__btn music__play music__play--big" aria-label="Play">' + PLAY + "</button>" +
+            '<button class="music__btn music__next" aria-label="Next">' + NEXT + "</button>" +
+          "</div>" +
+          '<div class="music__time"><span class="music__elapsed">0:00</span>' +
+            '<span class="music__count"></span></div>' +
+          '<div class="music__vol">' +
+            '<svg class="music__volic" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a4 4 0 0 1 0 7"/></svg>' +
+            '<input class="music__slider" type="range" min="0" max="100" value="60" aria-label="Volume">' +
+          "</div>" +
+        "</div>" +
+      "</div>";
+
+    modal.appendChild(backdrop);
+    modal.appendChild(win);
+    screen.appendChild(modal);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => modal.classList.add("winmodal--open"))
+    );
+
+    const root = win.querySelector(".music");
+    const bars = [...win.querySelectorAll(".music__bar")];
+    const playBtn = win.querySelector(".music__play");
+    const trackEl = win.querySelector(".music__track");
+    const artistEl = win.querySelector(".music__artist");
+    const labelEl = win.querySelector(".music__label");
+    const elapsedEl = win.querySelector(".music__elapsed");
+    const countEl = win.querySelector(".music__count");
+    const slider = win.querySelector(".music__slider");
+
+    function paintTrack() {
+      const T = TRACKS[cur];
+      trackEl.textContent = T.name;
+      artistEl.textContent = T.artist;
+      labelEl.textContent = T.name.split(" ")[0];
+      root.dataset.track = String(cur);
+      countEl.textContent = (cur + 1) + " / " + TRACKS.length;
+    }
+    function updTime() { elapsedEl.textContent = fmt(elapsed); }
+    function setPlayUI(on) {
+      playBtn.innerHTML = on ? PAUSE : PLAY;
+      playBtn.setAttribute("aria-label", on ? "Pause" : "Play");
+      root.classList.toggle("music--playing", on);
+      if (!on) bars.forEach((b) => (b.style.transform = "scaleY(0.1)"));
+    }
+
+    function play() {
+      ensureAudio();
+      if (actx.state === "suspended") actx.resume();
+      playing = true;
+      nextT = actx.currentTime + 0.06;
+      if (TRACKS[cur].rain && !rain) rain = noiseLayer("highpass", 900, 0.05);
+      sched = setInterval(scheduler, 25);
+      draw(bars);
+      elapsedTimer = setInterval(() => { elapsed++; updTime(); }, 1000);
+      setPlayUI(true);
+    }
+    function pause() {
+      playing = false;
+      clearInterval(sched); sched = null;
+      cancelAnimationFrame(rafId); rafId = null;
+      clearInterval(elapsedTimer); elapsedTimer = null;
+      if (actx) actx.suspend();
+      setPlayUI(false);
+    }
+    function toggle() { playing ? pause() : play(); }
+    function switchTo(i) {
+      cur = (i + TRACKS.length) % TRACKS.length;
+      step = 0; elapsed = 0; updTime();
+      paintTrack();
+      if (rain && !TRACKS[cur].rain) { stopLayer(rain); rain = null; }
+      if (playing) {
+        if (TRACKS[cur].rain && !rain && actx) rain = noiseLayer("highpass", 900, 0.05);
+        nextT = actx.currentTime + 0.06;
+      }
+    }
+
+    playBtn.addEventListener("click", toggle);
+    win.querySelector(".music__prev").addEventListener("click", () => switchTo(cur - 1));
+    win.querySelector(".music__next").addEventListener("click", () => switchTo(cur + 1));
+    slider.addEventListener("input", () => {
+      vol = slider.value / 100;
+      if (master) master.gain.setTargetAtTime(vol, actx.currentTime, 0.02);
+    });
+
+    paintTrack();
+    setPlayUI(false);
+
+    // ---- window chrome (close / minimize / maximize) ----
+    function close() {
+      pause();
+      stopLayer(crackle); crackle = null;
+      stopLayer(rain); rain = null;
+      if (actx) { try { actx.close(); } catch (e) {} actx = null; }
+      cur = 0; step = 0; elapsed = 0;
+      modal.classList.remove("winmodal--open");
+      setTimeout(() => modal.remove(), 330);
+      document.removeEventListener("keydown", onKey);
+      win = null;
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    backdrop.addEventListener("click", close);
+    win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("winmodal__window--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
+    document.addEventListener("keydown", onKey);
+  }
+
+  trigger.style.cursor = "pointer";
+  trigger.addEventListener("click", (e) => {
+    e.preventDefault();
+    open(trigger);
+  });
+})();
+
+/* ===================== SYSTEM SETTINGS → WALLPAPER PICKER ===================== */
+(function () {
+  const trigger = document.querySelector(".dock__app--settings");
+  const screen = document.querySelector(".screen");
+  if (!trigger || !screen) return;
+
+  const WALLPAPERS = [
+    // ---- Live Wallpapers (looping video) ----
+    { id: "live-sonoma-light", name: "Sonoma", section: "Live Wallpapers", video: "wp-live-sonoma-light.mp4", poster: "wp-live-sonoma-light-poster.jpg", bg: "#3a6b8f" },
+    { id: "live-sonoma-dark", name: "Sonoma Dark", section: "Live Wallpapers", video: "wp-live-sonoma-dark.mp4", poster: "wp-live-sonoma-dark-poster.jpg", bg: "#16202e" },
+    // ---- macOS (photo / graphic) ----
+    { id: "bigsur", name: "Big Sur", section: "macOS", img: "macos-wallpaper.jpg", bg: "#1c3a52" },
+    { id: "sonoma", name: "Sonoma", section: "macOS", img: "wp-sonoma.jpg", bg: "#1f5b46" },
+    { id: "ventura", name: "Ventura", section: "macOS", img: "wp-ventura.jpg", bg: "#3a2a6e" },
+    { id: "monterey", name: "Monterey", section: "macOS", img: "wp-monterey.jpg", bg: "#3a2a5a" },
+    // ---- Colors ----
+    { id: "sky", name: "Sky", section: "Colors", img: "wp-radial.jpg", bg: "#4a90d9" },
+    { id: "blue", name: "Blue", section: "Colors", img: "wp-blue.jpg", bg: "#1a3a6e" },
+    { id: "purple", name: "Purple", section: "Colors", img: "wp-purple.jpg", bg: "#4a2a86" },
+    { id: "pink", name: "Pink", section: "Colors", img: "wp-pink.jpg", bg: "#b03a6e" },
+    { id: "yellow", name: "Yellow", section: "Colors", img: "wp-yellow.jpg", bg: "#d9d06a" },
+    { id: "green", name: "Green", section: "Colors", img: "wp-green.jpg", bg: "#2f7d4a" },
+    { id: "imac-blue", name: "iMac Blue", section: "Colors", img: "wp-imac-blue.jpg", bg: "#2a5aaa" },
+    { id: "imac-orange", name: "iMac Orange", section: "Colors", img: "wp-imac-orange.jpg", bg: "#d9772a" },
+    { id: "imac-purple", name: "iMac Purple", section: "Colors", img: "wp-imac-purple.jpg", bg: "#7a4aaa" },
+    { id: "imac-pink", name: "iMac Pink", section: "Colors", img: "wp-imac-pink.jpg", bg: "#d94a8a" },
+    { id: "imac-silver", name: "iMac Silver", section: "Colors", img: "wp-imac-silver.jpg", bg: "#b0b0b8" },
+    { id: "imac-yellow", name: "iMac Yellow", section: "Colors", img: "wp-imac-yellow.jpg", bg: "#e0c94a" },
+  ];
+  const KEY = "mp-wallpaper";
+  const store = {
+    get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} },
+  };
+
+  // full-screen looping video used for live wallpapers (created on demand)
+  let wpVideo = null;
+  function ensureVideo() {
+    if (wpVideo) return;
+    wpVideo = document.createElement("video");
+    wpVideo.className = "wallpaper-video";
+    wpVideo.muted = true;
+    wpVideo.loop = true;
+    wpVideo.setAttribute("muted", "");
+    wpVideo.setAttribute("playsinline", "");
+    wpVideo.setAttribute("autoplay", "");
+    wpVideo.style.display = "none";
+    document.body.insertBefore(wpVideo, document.body.firstChild);
+  }
+  function applyWallpaper(w) {
+    if (w.video) {
+      ensureVideo();
+      if (wpVideo.getAttribute("data-src") !== w.video) {
+        wpVideo.src = w.video;
+        wpVideo.setAttribute("data-src", w.video);
+      }
+      if (w.poster) wpVideo.poster = w.poster;
+      wpVideo.style.display = "block";
+      document.body.style.background = w.bg;
+      const pr = wpVideo.play();
+      if (pr && pr.catch) pr.catch(() => {});
+    } else {
+      if (wpVideo) wpVideo.style.display = "none";
+      document.body.style.background =
+        w.bg + ' url("' + w.img + '") center / cover no-repeat fixed';
+    }
+  }
+  // restore the saved wallpaper on load
+  let currentId = store.get() || WALLPAPERS[2].id;
+  if (store.get()) {
+    const savedWp = WALLPAPERS.find((w) => w.id === currentId);
+    if (savedWp) applyWallpaper(savedWp);
+  }
+
+  // traffic-light glyphs
+  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
+
+  const sicon = (bg, glyph, label, active, pane) =>
+    '<div class="set__item' + (active ? " set__item--active" : "") + '"' +
+      (pane ? ' data-pane="' + pane + '"' : "") + ">" +
+      '<span class="set__item-ic" style="background:' + bg + '">' + glyph + "</span>" +
+      '<span class="set__item-label">' + label + "</span></div>";
+  const GL = {
+    wifi: '<svg viewBox="0 0 24 24"><path d="M4.5 11a11 11 0 0 1 15 0M7.5 14a7 7 0 0 1 9 0"/><circle cx="12" cy="17.5" r="1.1" fill="#fff" stroke="none"/></svg>',
+    bt: '<svg viewBox="0 0 24 24"><path d="M8 7l8 5-8 5V4l8 5-8 5"/></svg>',
+    net: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.3 4 5 4 8s-1.5 5.7-4 8c-2.5-2.3-4-5-4-8s1.5-5.7 4-8z"/></svg>',
+    wall: '<svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="13" rx="2"/><path d="M4 15l4-3.5 3.5 3 3.5-4 5 5.5"/><circle cx="9" cy="9.5" r="1.2" fill="#fff" stroke="none"/></svg>',
+    disp: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M9 21h6M12 17v4"/></svg>',
+    batt: '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="9" rx="2"/><path d="M21 11v3"/><rect x="5" y="10" width="9" height="5" rx="1" fill="#fff" stroke="none"/></svg>',
+  };
+
+  let win = null;
+
+  function open(originEl) {
+    if (win) return;
+    const sRect = screen.getBoundingClientRect();
+    const r = (originEl || trigger).getBoundingClientRect();
+    const ox = r.left + r.width / 2 - sRect.left;
+    const oy = r.top + r.height / 2 - sRect.top;
+
+    const modal = document.createElement("div");
+    modal.className = "winmodal";
+    const backdrop = document.createElement("div");
+    backdrop.className = "winmodal__backdrop";
+    win = document.createElement("div");
+    win.className = "settingswin";
+    win.style.transformOrigin = ox + "px " + oy + "px";
+
+    const wallBtn = (w) =>
+      '<button class="set__wall' + (w.id === currentId ? " set__wall--active" : "") +
+        '" data-id="' + w.id + '">' +
+        '<span class="set__wall-thumb" style="background-image:url(\'' + (w.poster || w.img) + "')\">" +
+          (w.video ? '<span class="set__wall-live">LIVE</span>' : "") +
+        "</span>" +
+        '<span class="set__wall-name">' + w.name + "</span></button>";
+    // group into sections (preserve order)
+    const sections = [];
+    WALLPAPERS.forEach((w) => {
+      let s = sections.find((x) => x.name === w.section);
+      if (!s) { s = { name: w.section, items: [] }; sections.push(s); }
+      s.items.push(w);
+    });
+    const walls = sections
+      .map(
+        (s) =>
+          '<div class="set__section-label">' + s.name + "</div>" +
+          '<div class="set__grid">' + s.items.map(wallBtn).join("") + "</div>"
+      )
+      .join("");
+
+    win.innerHTML =
+      '<aside class="set__sidebar">' +
+        '<div class="set__side-top"><div class="winmodal__lights">' +
+          '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+          '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+          '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
+        "</div></div>" +
+        '<div class="set__search">' +
+          '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/></svg><span>Search</span>' +
+        "</div>" +
+        '<div class="set__list">' +
+          sicon("#3b8bff", GL.wifi, "Wi-Fi") +
+          sicon("#3b8bff", GL.bt, "Bluetooth") +
+          sicon("#3b8bff", GL.net, "Network") +
+          '<div class="set__sep"></div>' +
+          sicon("#3ab7d6", GL.wall, "Wallpaper", true, "wallpaper") +
+          sicon("#4a7bff", GL.disp, "Displays") +
+          sicon("#34c759", GL.batt, "Battery") +
+        "</div>" +
+      "</aside>" +
+      '<section class="set__main">' +
+        '<div class="set__header">' +
+          '<div class="set__title">Wallpaper</div>' +
+          '<div class="set__sub">Choose a picture for your desktop.</div>' +
+        "</div>" +
+        '<div class="set__body">' + walls + "</div>" +
+      "</section>";
+
+    modal.appendChild(backdrop);
+    modal.appendChild(win);
+    screen.appendChild(modal);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => modal.classList.add("winmodal--open"))
+    );
+
+    // pick a wallpaper (delegated across all section grids)
+    win.querySelector(".set__body").addEventListener("click", (e) => {
+      const btn = e.target.closest(".set__wall");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const w = WALLPAPERS.find((x) => x.id === id);
+      if (!w) return;
+      currentId = id;
+      applyWallpaper(w);
+      store.set(id);
+      win.querySelectorAll(".set__wall").forEach((el) =>
+        el.classList.toggle("set__wall--active", el.dataset.id === id)
+      );
+    });
+
+    // window chrome
+    function close() {
+      modal.classList.remove("winmodal--open");
+      setTimeout(() => modal.remove(), 330);
+      document.removeEventListener("keydown", onKey);
+      win = null;
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    backdrop.addEventListener("click", close);
+    win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("settingswin--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
+    document.addEventListener("keydown", onKey);
+  }
+
+  trigger.style.cursor = "pointer";
+  trigger.addEventListener("click", (e) => {
+    e.preventDefault();
+    open(trigger);
   });
 })();
