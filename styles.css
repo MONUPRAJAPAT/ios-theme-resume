@@ -4155,12 +4155,16 @@ body {
   }
 }
 
-/* ===== mobile: Experience + Featured Projects use the same gradient as About Me ===== */
+/* ===== mobile: Experience + Featured Projects use the same frosted glass as the app folders ===== */
 @media (max-width: 720px) {
   .ios .widget--exp,
   .ios .widget--projects {
-    background: linear-gradient(155deg, #3a2b6e, #7c3aed 58%, #ff5c8a);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(120, 120, 128, 0.26);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 0;
+    border-radius: 26px;
+    box-shadow: none; /* blend into the wallpaper exactly like the app folders */
   }
   .ios .exp__header,
   .ios .pjw__header {
