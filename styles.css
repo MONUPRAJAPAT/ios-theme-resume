@@ -3504,6 +3504,10 @@ body {
   .fw__toolbar {
     padding: 0 16px;
   }
+  /* Featured Projects: drop the search pill on mobile, keep just the share button */
+  .finderwin .nw__search {
+    display: none;
+  }
   .fw__grid--projects {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -4148,5 +4152,49 @@ body {
   }
   .set__grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* ===== mobile: Experience + Featured Projects use the same gradient as About Me ===== */
+@media (max-width: 720px) {
+  .ios .widget--exp,
+  .ios .widget--projects {
+    background: linear-gradient(155deg, #3a2b6e, #7c3aed 58%, #ff5c8a);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+  }
+  .ios .exp__header,
+  .ios .pjw__header {
+    border-bottom-color: rgba(255, 255, 255, 0.22);
+  }
+  .ios .exp__title,
+  .ios .pjw__title {
+    color: #fff;
+  }
+  .ios .exp__icon,
+  .ios .pjw__icon {
+    stroke: #fff;
+  }
+  .ios .exp__role {
+    color: #fff;
+  }
+  .ios .exp__company {
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .ios .exp__date {
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .ios .exp__item:not(:last-child)::before {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  .ios .exp__dot {
+    background: #fff;
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+  .ios .pjw__viewall {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+  }
+  .ios .pjw__viewall svg {
+    stroke: #fff;
   }
 }

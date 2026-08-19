@@ -1028,7 +1028,7 @@
           '<button class="fw__back" style="display:none" aria-label="Back">' + T.back + "</button>" +
           '<div class="fw__titles"><div class="fw__title">Recents</div>' +
             '<div class="fw__subtitle">3 items</div></div>' +
-          '<button class="nw__circ">' + T.share + "</button>" +
+          '<button class="nw__circ" aria-label="Share">' + T.share + "</button>" +
           '<div class="nw__search">' + T.search + "<span>Search</span></div>" +
         "</header>" +
         '<div class="fw__grid fw__grid--projects">' +
@@ -1064,6 +1064,48 @@
       minBtn.disabled = isMax;
     });
     document.addEventListener("keydown", onKey);
+
+    // share → "Copy Link" popover (copies the GitHub URL, same as About Me)
+    const SHARE_URL = "https://github.com/MONUPRAJAPAT";
+    const COPY_ICON =
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg>';
+    const shareBtn = win.querySelector('.nw__circ[aria-label="Share"]');
+    if (shareBtn) {
+      let sharePop = null;
+      const closeShare = () => {
+        if (!sharePop) return;
+        sharePop.remove();
+        sharePop = null;
+        document.removeEventListener("click", outsideShare);
+      };
+      const outsideShare = (e) => {
+        if (sharePop && !sharePop.contains(e.target) && !shareBtn.contains(e.target)) closeShare();
+      };
+      shareBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (sharePop) return closeShare();
+        sharePop = document.createElement("div");
+        sharePop.className = "nw__share-pop";
+        sharePop.innerHTML =
+          '<div class="nw__share-title">Copy Link</div>' +
+          '<button class="nw__share-row" type="button">' +
+            '<span class="nw__share-url">' + SHARE_URL + "</span>" +
+            '<span class="nw__share-copy">' + COPY_ICON + "</span>" +
+          "</button>";
+        win.appendChild(sharePop);
+        const wr = win.getBoundingClientRect();
+        const br = shareBtn.getBoundingClientRect();
+        sharePop.style.top = br.bottom - wr.top + 8 + "px";
+        sharePop.style.left = Math.max(8, br.right - wr.left - 300) + "px";
+        requestAnimationFrame(() => sharePop.classList.add("nw__share-pop--show"));
+        sharePop.querySelector(".nw__share-row").addEventListener("click", () => {
+          if (navigator.clipboard) navigator.clipboard.writeText(SHARE_URL).catch(() => {});
+          sharePop.querySelector(".nw__share-title").textContent = "Link Copied!";
+          setTimeout(closeShare, 950);
+        });
+        setTimeout(() => document.addEventListener("click", outsideShare), 0);
+      });
+    }
 
     // ---- sidebar filtering + ⋯ menu + detail drill-in ----
     const grid = win.querySelector(".fw__grid--projects");
