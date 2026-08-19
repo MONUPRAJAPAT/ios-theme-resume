@@ -1347,20 +1347,26 @@
   tip.className = "dock__tooltip";
   dock.appendChild(tip);
 
-  dock.querySelectorAll(".dock__app").forEach((app) => {
+  const labelFor = (app) => {
     const key = Object.keys(TIPS).find((c) => app.classList.contains(c));
-    const label = key ? TIPS[key] : app.getAttribute("aria-label") || "";
-    if (!label) return;
+    return key ? TIPS[key] : app.getAttribute("aria-label") || "";
+  };
+  const hide = () => tip.classList.remove("dock__tooltip--show");
 
-    app.addEventListener("mouseenter", () => {
-      tip.textContent = label;
-      tip.style.left = app.offsetLeft + app.offsetWidth / 2 + "px";
-      tip.classList.add("dock__tooltip--show");
-    });
-    app.addEventListener("mouseleave", () => {
-      tip.classList.remove("dock__tooltip--show");
-    });
+  // reposition on every move so it tracks the icon as it magnifies + rises
+  dock.addEventListener("mousemove", (e) => {
+    const app = e.target.closest(".dock__app");
+    if (!app) return hide();
+    const label = labelFor(app);
+    if (!label) return hide();
+    const dr = dock.getBoundingClientRect();
+    const ar = app.getBoundingClientRect(); // reflects the current magnified size/position
+    tip.textContent = label;
+    tip.style.left = ar.left + ar.width / 2 - dr.left + "px"; // magnified icon centre
+    tip.style.top = ar.top - dr.top + "px"; // magnified icon top (rises above the pill)
+    tip.classList.add("dock__tooltip--show");
   });
+  dock.addEventListener("mouseleave", hide);
 })();
 
 /* ===================== PROJECT CAROUSEL ===================== */

@@ -2864,8 +2864,11 @@ body {
 /* macOS-style hover tooltip (single element, positioned via JS) */
 .dock__tooltip {
   position: absolute;
-  bottom: calc(100% + 12px);
-  transform: translateX(-50%) translateY(6px) scale(0.96);
+  left: 0;
+  top: 0;
+  /* JS sets left/top to the (magnified) icon's top-centre; sit just above it */
+  transform: translate(-50%, calc(-100% - 6px)) scale(0.96);
+  transform-origin: bottom center;
   padding: 5px 13px;
   border-radius: 9px;
   font-size: 13px;
@@ -2893,7 +2896,7 @@ body {
 }
 .dock__tooltip--show {
   opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: translate(-50%, calc(-100% - 12px)) scale(1);
 }
 
 .dock__app {
@@ -3049,21 +3052,17 @@ body {
   height: 70%;
   display: block;
 }
-/* System Settings — gear on a brushed-metal tile */
+/* System Settings — iOS/macOS interlocking gears on a silver tile */
 .dock__app--settings {
-  background: linear-gradient(160deg, #7c7c82 0%, #5a5a60 50%, #3a3a3f 100%);
+  background: linear-gradient(180deg, #97999f 0%, #62656b 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .dock__app--settings svg {
-  width: 66%;
-  height: 66%;
-  fill: none;
-  stroke: #fff;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 84%;
+  height: 84%;
+  display: block;
 }
 
 /* ===================== MUSIC — GENERATIVE LO-FI PLAYER ===================== */
