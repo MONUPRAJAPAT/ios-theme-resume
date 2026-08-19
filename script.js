@@ -465,7 +465,7 @@
     linkedin: S('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="7.6" cy="8" r="1.1" fill="currentColor" stroke="none"/><path d="M7.6 10.8v6.2"/><path d="M11 17v-6.2"/><path d="M11 13.3c.4-1 1.4-1.8 2.7-1.8 1.6 0 2.7 1.1 2.7 3V17"/>'),
     pin: S('<path d="M12 21c4-4 6.3-7.2 6.3-10.5a6.3 6.3 0 1 0-12.6 0C5.7 13.8 8 17 12 21z"/><circle cx="12" cy="10.4" r="2.3"/>'),
   };
-  const PORTFOLIO_URL = "https://monuprajapat.github.io/Portfolio/";
+  const PORTFOLIO_URL = "https://github.com/MONUPRAJAPAT"; // shown/copied by the Share button
 
   // ---- content builders ----
   const P = (t) => '<p class="nw__p">' + t + "</p>";
@@ -489,6 +489,28 @@
           (date ? '<span class="nw__job-date">' + date + "</span>" : "") +
         "</div>" +
         (bullets && bullets.length ? UL(bullets) : "") +
+      "</div>"
+    );
+  };
+  // like JOB, but the tech stack renders as chips AFTER the bullets (so it never
+  // clashes with the project name on narrow/mobile screens)
+  const PROJ = (title, stack, bullets) => {
+    const idx = title.indexOf(",");
+    const role = idx >= 0 ? title.slice(0, idx) : title;
+    const org = idx >= 0 ? title.slice(idx + 1).trim() : "";
+    const chips = stack
+      ? '<div class="nw__stack">' +
+        stack.split("·").map((s) => '<span class="nw__stack-chip">' + s.trim() + "</span>").join("") +
+        "</div>"
+      : "";
+    return (
+      '<div class="nw__job">' +
+        '<div class="nw__job-head"><div class="nw__job-titles">' +
+          '<div class="nw__job-role">' + role + "</div>" +
+          (org ? '<div class="nw__job-org">' + org + "</div>" : "") +
+        "</div></div>" +
+        (bullets && bullets.length ? UL(bullets) : "") +
+        chips +
       "</div>"
     );
   };
@@ -553,9 +575,9 @@
 
     "Projects":
       '<h1 class="nw__h1">Projects</h1>' +
-      JOB(`Solar Calculator, Solar ROI & Analytics Platform`, ``, [`Engineered an end-to-end solar cost-benefit analysis platform, from data ingestion to ROI insights, for estimating energy production, costs, savings, and ROI prior to installation`, `Ingested and processed a full year of 15-minute interval usage data (~35,000 points) via the Smart Meter Texas (SMT) API`, `Built proprietary algorithms to track sun position and model shading, enabling precise, panel-specific production estimates`, `Developed a tariff engine for location-based rate structures and accurate cost modeling, and unified all data into a single cost-benefit engine with interactive battery and grid charts`]) +
-      JOB(`TruGamer, Unified Gaming Platform`, `Next.js · Strapi · PostgreSQL · AWS`, [`Engineered an IGDB game-data ingestion pipeline processing 350,000+ games with batching, rate limiting, and retry logic, sustaining a 14-day non-stop run with zero data loss; built a webhook pipeline for continuous game updates`, `Integrated Steam, Xbox, and PSN APIs with custom per-platform ID resolution, reducing sync to 4-6 API calls per platform per user`, `Implemented priority-queue scheduling and response caching for 700+ active users`]) +
-      JOB(`ICM, Intelligent Cost Manager (University of Melbourne)`, `Node.js · PostgreSQL · Supabase · React · Auth0`, [`Built a production-grade cost benchmarking platform managing construction project costs across an 8-level data hierarchy with real-time validation at every level`, `Designed a 26-table normalized PostgreSQL schema with recursive parent-child cost verification`, `Implemented role-based access control (Owner/Admin/Editor/Viewer) using Auth0, JWT, and org-level data isolation`]),
+      PROJ(`Solar Calculator, Solar ROI & Analytics Platform`, `Node.js · React · PostgreSQL · SMT API · AWS`, [`Engineered an end-to-end solar cost-benefit analysis platform, from data ingestion to ROI insights, for estimating energy production, costs, savings, and ROI prior to installation`, `Ingested and processed a full year of 15-minute interval usage data (~35,000 points) via the Smart Meter Texas (SMT) API`, `Built proprietary algorithms to track sun position and model shading, enabling precise, panel-specific production estimates`, `Developed a tariff engine for location-based rate structures and accurate cost modeling, and unified all data into a single cost-benefit engine with interactive battery and grid charts`]) +
+      PROJ(`TruGamer, Unified Gaming Platform`, `Next.js · Strapi · PostgreSQL · AWS`, [`Engineered an IGDB game-data ingestion pipeline processing 350,000+ games with batching, rate limiting, and retry logic, sustaining a 14-day non-stop run with zero data loss; built a webhook pipeline for continuous game updates`, `Integrated Steam, Xbox, and PSN APIs with custom per-platform ID resolution, reducing sync to 4-6 API calls per platform per user`, `Implemented priority-queue scheduling and response caching for 700+ active users`]) +
+      PROJ(`ICM, Intelligent Cost Manager (University of Melbourne)`, `Node.js · PostgreSQL · Supabase · React · Auth0`, [`Built a production-grade cost benchmarking platform managing construction project costs across an 8-level data hierarchy with real-time validation at every level`, `Designed a 26-table normalized PostgreSQL schema with recursive parent-child cost verification`, `Implemented role-based access control (Owner/Admin/Editor/Viewer) using Auth0, JWT, and org-level data isolation`]),
 
     "Skills":
       '<h1 class="nw__h1">Skills</h1>' +
@@ -1892,5 +1914,183 @@
   trigger.addEventListener("click", (e) => {
     e.preventDefault();
     open(trigger);
+  });
+})();
+
+/* ===================== iOS HOME (mobile) — clone app icons + wire ===================== */
+(function () {
+  const ios = document.querySelector(".ios");
+  if (!ios) return;
+
+  // map each iOS app slot to the real trigger element it should mirror + open
+  const MAP = {
+    finder: ".dock__app--finder",
+    notes: ".dock__app--notes",
+    music: ".dock__app--music",
+    settings: ".dock__app--settings",
+    acrobat: ".dock__app--acrobat",
+    mail: ".dock__app--mail",
+    linkedin: ".dock__app--linkedin",
+    github: ".dock__app--github",
+    ttt: '[data-game="ttt"]',
+    memory: '[data-game="memory"]',
+  };
+
+  // some dock icons are drawn with pseudo-elements/padding that don't scale when
+  // cloned — give those a clean, scalable SVG instead
+  const OVERRIDE = {
+    notes:
+      '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fdfdfb"/>' +
+      '<rect width="100" height="27" fill="#ffcf2e"/>' +
+      '<g fill="#d6d4cd"><rect x="15" y="42" width="70" height="4.5" rx="2.2"/>' +
+      '<rect x="15" y="58" width="70" height="4.5" rx="2.2"/>' +
+      '<rect x="15" y="74" width="52" height="4.5" rx="2.2"/></g></svg>',
+  };
+
+  // cloned SVG icons carry <defs> ids (e.g. mailBody, finderBlue). Duplicated in
+  // the DOM they hijack the originals' url(#id) refs and break the real dock icons
+  // on desktop — so rename every id inside a clone and rewire its own references.
+  function uniquifyIds(node, prefix) {
+    node.querySelectorAll("[id]").forEach((el) => {
+      const oldId = el.id;
+      const newId = prefix + "-" + oldId;
+      el.id = newId;
+      node.querySelectorAll("*").forEach((e2) => {
+        ["fill", "stroke", "clip-path", "filter", "mask"].forEach((attr) => {
+          const v = e2.getAttribute(attr);
+          if (v && v.indexOf("url(#" + oldId + ")") !== -1) {
+            e2.setAttribute(attr, v.split("url(#" + oldId + ")").join("url(#" + newId + ")"));
+          }
+        });
+      });
+    });
+  }
+
+  ios.querySelectorAll(".ios__app").forEach((slot, i) => {
+    const key = slot.dataset.app;
+    const real = document.querySelector(MAP[key]);
+    const ic = slot.querySelector(".ios__app-ic");
+    if (OVERRIDE[key]) {
+      ic.innerHTML = OVERRIDE[key];
+    } else if (real) {
+      // clone the real icon's visual (keeps its background + artwork)
+      const clone = real.cloneNode(true);
+      clone.removeAttribute("href");
+      clone.removeAttribute("aria-label");
+      clone.style.pointerEvents = "none";
+      uniquifyIds(clone, "iosclone" + i);
+      ic.appendChild(clone);
+    }
+    // forward taps to the real trigger (opens the window / link exactly the same)
+    if (real) {
+      slot.addEventListener("click", (e) => {
+        e.preventDefault();
+        real.click();
+      });
+    }
+  });
+
+  // live date for the calendar widget
+  const day = ios.querySelector(".ios__cal-day");
+  const num = ios.querySelector(".ios__cal-num");
+  if (day && num) {
+    const d = new Date();
+    const names = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    day.textContent = names[d.getDay()];
+    num.textContent = d.getDate();
+  }
+})();
+
+/* ===================== MOBILE: iOS "‹ Home" back button in app windows ===================== */
+(function () {
+  const screen = document.querySelector(".screen");
+  if (!screen || !("MutationObserver" in window)) return;
+  const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+
+  function addBack(modal) {
+    if (!isMobile() || modal.querySelector(".ios-back")) return;
+    const closeBtn = modal.querySelector(".wl--close");
+    if (!closeBtn) return;
+    const lights = closeBtn.closest(".nw__lights, .winmodal__lights");
+    const host = (lights && lights.parentElement) || modal;
+    const back = document.createElement("button");
+    back.className = "ios-back";
+    back.type = "button";
+    back.setAttribute("aria-label", "Home");
+    back.innerHTML =
+      '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>Home</span>';
+    back.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeBtn.click();
+    });
+    host.insertBefore(back, host.firstChild);
+  }
+
+  new MutationObserver((muts) => {
+    muts.forEach((m) =>
+      m.addedNodes.forEach((n) => {
+        if (n.nodeType === 1 && n.classList && n.classList.contains("winmodal")) addBack(n);
+      })
+    );
+  }).observe(screen, { childList: true });
+})();
+
+/* ===================== macOS DOCK MAGNIFICATION (fisheye) ===================== */
+(function () {
+  const dock = document.querySelector(".dock");
+  if (!dock) return;
+
+  const BASE = 52;   // rest icon size (matches CSS)
+  const MAX = 86;    // size of the icon directly under the cursor
+  const SPREAD = 62; // px std-dev of the falloff → how many neighbours grow
+
+  let apps = [];
+  let centers = [];
+
+  function cache() {
+    apps = [...dock.querySelectorAll(".dock__app")];
+    apps.forEach((a) => {
+      a.style.width = "";
+      a.style.height = "";
+    });
+    // read each icon's rest-position centre (stable → no feedback jitter)
+    centers = apps.map((a) => {
+      const r = a.getBoundingClientRect();
+      return r.left + r.width / 2;
+    });
+  }
+  function magnify(x) {
+    for (let i = 0; i < apps.length; i++) {
+      const d = x - centers[i];
+      const f = Math.exp(-(d * d) / (2 * SPREAD * SPREAD)); // 1 at cursor → 0 far away
+      const size = BASE + (MAX - BASE) * f;
+      apps[i].style.width = size + "px";
+      apps[i].style.height = size + "px";
+    }
+  }
+  function reset() {
+    apps.forEach((a) => {
+      a.style.width = "";
+      a.style.height = "";
+    });
+  }
+
+  dock.addEventListener("mouseenter", (e) => {
+    if (window.matchMedia("(max-width: 720px)").matches) return;
+    cache();
+    dock.classList.add("dock--magnifying");
+    magnify(e.clientX);
+  });
+  dock.addEventListener("mousemove", (e) => {
+    if (apps.length) magnify(e.clientX);
+  });
+  dock.addEventListener("mouseleave", () => {
+    dock.classList.remove("dock--magnifying");
+    reset();
+  });
+  window.addEventListener("resize", () => {
+    dock.classList.remove("dock--magnifying");
+    reset();
+    apps = [];
   });
 })();

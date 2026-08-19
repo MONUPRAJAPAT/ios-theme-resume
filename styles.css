@@ -2387,6 +2387,22 @@ body {
 .nw__job .nw__ul {
   margin: 2px 0 0;
 }
+/* project tech stack rendered as chips AFTER the bullets (never clashes with the name) */
+.nw__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.nw__stack-chip {
+  font-size: 12px;
+  font-weight: 500;
+  color: #37373a;
+  background: #f0f0f3;
+  border: 0.5px solid rgba(0, 0, 0, 0.05);
+  border-radius: 100px;
+  padding: 4px 11px;
+}
 .nw__job .nw__ul .nw__li:last-child {
   margin-bottom: 0;
 }
@@ -2832,8 +2848,9 @@ body {
   align-self: center;
   margin-bottom: 28px;
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* magnified icons grow upward, out of the pill */
   gap: 12px;
+  height: 68px;
   padding: 8px 12px;
   border-radius: 22px;
   background: rgba(60, 60, 65, 0.4);
@@ -2841,6 +2858,7 @@ body {
   -webkit-backdrop-filter: blur(24px);
   border: 0.5px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  overflow: visible; /* let magnified icons overflow above the pill */
 }
 
 /* macOS-style hover tooltip (single element, positioned via JS) */
@@ -2889,11 +2907,14 @@ body {
   overflow: hidden;
   text-decoration: none;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-  transition: transform 0.16s ease;
+  flex: 0 0 auto;
+  /* JS drives width/height for cursor-proximity magnification; ease the reset */
+  transition: width 0.18s cubic-bezier(0.2, 0.9, 0.25, 1),
+    height 0.18s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
-
-.dock__app:hover {
-  transform: translateY(-6px) scale(1.05);
+/* while the cursor is moving over the dock, follow instantly (no lag) */
+.dock--magnifying .dock__app {
+  transition: none;
 }
 
 .dock__app svg {
@@ -3285,6 +3306,57 @@ body {
   cursor: pointer;
 }
 
+/* iOS home is mobile-only (hidden on desktop) */
+.ios {
+  display: none;
+}
+
+/* ===================== macOS-style Experience + Featured Projects (desktop) ===================== */
+.desktop .widget--exp,
+.desktop .widget--projects {
+  background: #fdfdfb; /* solid white, same as the About Me widget */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+/* flatten the skeuomorphic frosted header band into a clean macOS-widget header */
+.desktop .exp__header,
+.desktop .pjw__header {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+  padding: 16px 22px 13px;
+}
+.desktop .exp__title,
+.desktop .pjw__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+.desktop .exp__icon,
+.desktop .pjw__icon {
+  stroke: #1d1d1f;
+}
+/* project image cards: crisper corners + soft depth */
+.desktop .widget--projects .pjw__card {
+  border-radius: 16px;
+  border: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+/* View All → clean macOS accent button */
+.desktop .pjw__viewall {
+  border-radius: 12px;
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
+  font-weight: 600;
+}
+.desktop .pjw__viewall svg {
+  stroke: #007aff;
+}
+
 /* ===================================================================== */
 /* ===================== MOBILE / iPHONE EXPERIENCE ==================== */
 /* ===================================================================== */
@@ -3312,81 +3384,37 @@ body {
     font-weight: 600;
   }
 
-  /* ---------- HOME SCREEN → single scrollable column ---------- */
-  .desktop {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 6px 16px 128px; /* bottom room so the dock never covers content */
-    overflow-y: auto;
-    overflow-x: hidden; /* never scroll sideways */
-    -webkit-overflow-scrolling: touch;
+  /* ---------- iPhone: hide the macOS desktop + dock, show the iOS home ---------- */
+  .desktop,
+  .dock {
+    display: none !important;
   }
-  /* cap every level to the viewport so one wide child can't stretch the rest */
-  .widget-col,
-  .widget-row,
+  .ios {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 18px 40px;
+  }
   .widget {
     width: 100%;
     max-width: 100%;
     min-width: 0;
-  }
-  .widget-col {
-    gap: 16px;
-  }
-
-  /* small widgets share the row as flexible squares */
-  .widget-row {
-    gap: 14px;
-  }
-  .widget--sm {
-    width: auto;
-    height: auto;
-    flex: 1 1 0;
-    aspect-ratio: 1 / 1;
-  }
-  /* large widgets let their content define the height */
-  .widget--lg {
-    height: auto;
-    min-height: 260px;
-  }
-
-  /* ---------- DOCK → fixed at the bottom, iOS-style ---------- */
-  .dock {
-    position: fixed;
-    left: 50%;
-    bottom: 16px;
-    transform: translateX(-50%);
-    margin: 0;
-    gap: 6px;
-    padding: 8px 10px;
-    max-width: calc(100vw - 16px);
-    overflow-x: auto;
-    scrollbar-width: none;
-    z-index: 50;
-  }
-  .dock::-webkit-scrollbar {
-    display: none;
-  }
-  .dock__app {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    flex: 0 0 auto;
-  }
-  .dock__divider {
-    display: none;
   }
 
   /* ---------- APPS OPEN FULL-SCREEN (like tapping an iPhone app) ------- */
   .winmodal__window,
   .noteswin,
   .finderwin,
-  .musicwin {
+  .musicwin,
+  .settingswin {
     width: 100% !important;
     height: 100% !important;
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 0;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
   }
 
   /* Notes: traffic lights + a horizontal tab strip on top, content below */
@@ -3427,11 +3455,15 @@ body {
     height: 52px;
     padding: 0 16px;
   }
+  /* About Me: drop the search pill on mobile, keep just the share button */
+  .noteswin .nw__search {
+    display: none;
+  }
   .nw__content {
     padding: 20px 18px 28px;
   }
 
-  /* Finder: hide the decorative nav, project grid fills full width */
+  /* Finder: sidebar → top bar with a horizontal, scrollable category tab strip */
   .finderwin {
     flex-direction: column;
   }
@@ -3447,7 +3479,23 @@ body {
     height: 46px;
   }
   .fw__list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding: 6px 12px 10px;
+    scrollbar-width: none;
+  }
+  .fw__list::-webkit-scrollbar {
     display: none;
+  }
+  .fw__list .fw__section {
+    display: none; /* hide the "Portfolio" divider label inline */
+  }
+  .fw__item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 13px;
   }
   .fw__main {
     flex: 1 1 auto;
@@ -3461,10 +3509,366 @@ body {
     gap: 16px;
     padding: 16px;
   }
+  /* project detail page → mobile friendly */
+  .pjd {
+    padding: 18px 16px 44px;
+  }
+  .pjd__hero {
+    height: 200px;
+  }
+  .pjd__title {
+    font-size: 22px;
+  }
+  .pjd__foot {
+    gap: 12px;
+  }
+  .pjd__visit {
+    margin-left: 0;
+  }
 
   /* Music already centers; full-screen looks great as-is */
   .musicwin .winmodal__body {
     padding: 0;
+  }
+}
+
+/* ===================== iOS HOME SCREEN (mobile) ===================== */
+@media (max-width: 720px) {
+  .ios__search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    margin: 8px 0 20px;
+    border-radius: 12px;
+    background: rgba(120, 120, 128, 0.26);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 16px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  .ios__search svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .ios__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: stretch; /* widgets match their neighbour's height (e.g. Core Stack ↔ Games) */
+  }
+
+  /* generic iOS widget card */
+  .ios__widget {
+    border-radius: 22px;
+    padding: 16px;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+  .ios__about,
+  .ios__cal,
+  .ios__skills {
+    min-height: 158px;
+    display: flex;
+    flex-direction: column;
+  }
+  .ios__about {
+    background: linear-gradient(155deg, #3a2b6e, #7c3aed 58%, #ff5c8a);
+  }
+  .ios__about-hi {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .ios__about-role {
+    margin-top: auto;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.95;
+  }
+  .ios__about-loc {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 3px;
+  }
+  .ios__cal,
+  .ios__skills {
+    background: rgba(28, 28, 32, 0.55);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+  }
+  .ios__cal-day {
+    color: #ff453a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .ios__cal-num {
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .ios__cal-sub {
+    margin-top: auto;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .ios__skills-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+  }
+  .ios__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ios__chips span {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+  }
+
+  /* App Library folder box */
+  .ios__folder {
+    background: rgba(120, 120, 128, 0.26);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border-radius: 26px;
+    padding: 14px 14px 4px;
+    align-self: start;
+  }
+  .ios__folder-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .ios__folder-label {
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 12px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+  .ios__app {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: block;
+    aspect-ratio: 1;
+    transition: transform 0.12s ease;
+  }
+  .ios__app:active {
+    transform: scale(0.9);
+  }
+  /* invisible placeholder keeps a folder's 2x2 size even with fewer apps */
+  .ios__app--empty {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .ios__app-ic {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 23%;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  /* normalize whatever icon got cloned in so it fills the tile */
+  .ios__app-ic > * {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 23% !important;
+    box-shadow: none !important;
+    display: flex !important;
+    position: static !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+  .ios__app-ic img {
+    object-fit: cover;
+  }
+  .ios__app-ic svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* reused widgets (Experience / Projects) inside the iOS home */
+  .ios .widget--exp,
+  .ios .widget--projects {
+    height: auto;
+    min-height: 0;
+    margin-bottom: 16px;
+  }
+  .ios .widget--projects .pjw__list {
+    gap: 12px;
+    padding: 14px;
+  }
+  .ios .widget--projects .pjw__card {
+    min-height: 132px;
+  }
+
+  /* Settings window on mobile: sidebar → slim top bar, main fills */
+  .settingswin {
+    flex-direction: column;
+  }
+  .set__sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    height: 48px;
+    border-right: 0;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  }
+  .set__search,
+  .set__list {
+    display: none;
+  }
+  .set__main {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .set__grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* iOS polish for the Experience + Featured Projects widgets on mobile */
+@media (max-width: 720px) {
+  .ios .widget--exp,
+  .ios .widget--projects {
+    background: rgba(255, 255, 255, 0.97);
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+  }
+
+  /* flatten the desktop "frosted band" headers into clean iOS titles */
+  .ios .exp__header,
+  .ios .pjw__header {
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    border-bottom: 0;
+    padding: 18px 20px 8px;
+  }
+  .ios .exp__title,
+  .ios .pjw__title {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  /* Experience timeline */
+  .ios .exp__timeline {
+    gap: 20px;
+    padding: 16px 20px 22px 44px;
+  }
+  .ios .exp__role {
+    font-size: 15px;
+  }
+
+  /* Featured Projects → iOS image cards */
+  .ios .widget--projects .pjw__list {
+    padding: 12px 16px 6px;
+    gap: 12px;
+  }
+  .ios .widget--projects .pjw__card {
+    flex: 0 0 auto;
+    height: 128px;
+    min-height: 0;
+    border-radius: 18px;
+    border: 0;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  }
+  .ios .pjw__overlay {
+    padding: 28px 15px 13px;
+  }
+  .ios .pjw__name {
+    font-size: 16px;
+  }
+
+  /* View All → clean iOS accent button */
+  .ios .pjw__viewall {
+    margin: 4px 16px 16px;
+    padding: 13px;
+    border-radius: 14px;
+    background: rgba(0, 122, 255, 0.1);
+    color: #007aff;
+    font-weight: 600;
+  }
+  .ios .pjw__viewall svg {
+    stroke: #007aff;
+  }
+}
+
+/* iOS back button replaces the macOS traffic lights inside full-screen apps */
+.ios-back {
+  display: none;
+}
+@media (max-width: 720px) {
+  /* hide the close/min/max dots on phones */
+  .winmodal .wl {
+    display: none !important;
+  }
+  .ios-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: #007aff;
+    font-size: 16.5px;
+    font-weight: 500;
+    padding: 4px 10px 4px 0;
+    margin-right: auto; /* push any title/content to the right */
+    -webkit-tap-highlight-color: transparent;
+    flex: 0 0 auto;
+  }
+  .ios-back svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ios-back span {
+    margin-left: -3px;
+  }
+  /* the header rows that held the lights now hold the back button */
+  .nw__side-top,
+  .fw__side-top,
+  .set__side-top {
+    justify-content: flex-start;
+  }
+  /* clean white top bar behind the Home button (like About Me — no grey band) */
+  .winmodal__bar,
+  .set__sidebar {
+    background: #fff !important;
   }
 }
 
@@ -3717,4 +4121,32 @@ body {
 }
 .set__grid:last-child {
   margin-bottom: 0;
+}
+
+/* ===== mobile Settings overrides (must come AFTER the base settings CSS above) ===== */
+@media (max-width: 720px) {
+  .settingswin {
+    flex-direction: column;
+  }
+  .set__sidebar {
+    width: 100%;
+    height: 48px;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    background: #fff;
+    border-right: 0;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  }
+  .set__search,
+  .set__list {
+    display: none;
+  }
+  .set__main {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .set__grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
 }
