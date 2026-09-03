@@ -77,6 +77,27 @@ body {
 
 .menubar__item {
   cursor: default;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 2px 7px;
+  border-radius: 5px;
+  line-height: 1.2;
+}
+/* clickable menus stay completely flat — no highlight on hover */
+button.menubar__item {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+button.menubar__item:hover {
+  background: none;
+}
+/* keyboard focus still needs to be visible; a mouse never triggers this */
+button.menubar__item:focus-visible {
+  outline: 1.5px solid rgba(255, 255, 255, 0.7);
+  outline-offset: -1px;
 }
 
 .menubar__item--bold {
@@ -129,7 +150,7 @@ body {
   min-height: 0; /* never let tall content push the dock off-screen */
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch; /* columns fill the height so no dead space under the cards */
   padding: var(--desktop-pad);
   /* keeps the center of the screen open for the wallpaper subject */
 }
@@ -363,11 +384,13 @@ body {
 }
 
 /* row: role/company on the left, dates on the right */
+/* Stacked by default — role, then date, then company. Wide desktop columns opt
+   back into the side-by-side layout below, where the date genuinely fits. */
 .exp__row {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 1px;
 }
 
 .exp__info {
@@ -387,7 +410,6 @@ body {
   color: #6a6a6c;
   margin-top: 3px;
   line-height: 1.3;
-  white-space: nowrap;
 }
 
 .exp__date {
@@ -396,7 +418,6 @@ body {
   font-weight: 500;
   color: #9a9a9a;
   white-space: nowrap;
-  padding-top: 2px;
 }
 
 /* ===================== FEATURED PROJECTS WIDGET ===================== */
@@ -3313,11 +3334,13 @@ body {
 /* ===================== macOS-style Experience + Featured Projects (desktop) ===================== */
 .desktop .widget--exp,
 .desktop .widget--projects {
-  background: #fdfdfb; /* solid white, same as the About Me widget */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.12);
+  /* same frosted glass the iOS home uses — blends into the wallpaper */
+  background: rgba(120, 120, 128, 0.26);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border: 0;
+  border-radius: 26px;
+  box-shadow: none;
 }
 /* flatten the skeuomorphic frosted header band into a clean macOS-widget header */
 .desktop .exp__header,
@@ -3326,18 +3349,73 @@ body {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.22);
   padding: 16px 22px 13px;
 }
 .desktop .exp__title,
 .desktop .pjw__title {
   font-size: 16px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: #fff;
 }
 .desktop .exp__icon,
 .desktop .pjw__icon {
-  stroke: #1d1d1f;
+  stroke: #fff;
+}
+/* timeline text on glass */
+.desktop .exp__role {
+  color: #fff;
+}
+.desktop .exp__company {
+  color: rgba(255, 255, 255, 0.78);
+}
+.desktop .exp__date {
+  color: rgba(255, 255, 255, 0.72);
+}
+.desktop .exp__item:not(:last-child)::before {
+  background: rgba(255, 255, 255, 0.3);
+}
+.desktop .exp__dot {
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+/* keep the "current role" marker readable on glass */
+.desktop .exp__item--current .exp__dot,
+.ios .exp__item--current .exp__dot {
+  background: #ff9500;
+  border-color: #ff9500;
+  box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.22);
+}
+
+/* ---- desktop cards fill their column instead of leaving dead space ---- */
+.desktop .widget-col {
+  min-height: 0;
+}
+.desktop .widget--exp {
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 250px; /* header + three entries + rails; below this fit() scales */
+}
+.desktop .widget--projects {
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 320px;
+}
+/* the three entries share the timeline's height evenly — the rail runs edge to
+   edge and the card never ends in a blank strip */
+.desktop .exp__timeline {
+  min-height: 0;
+  padding: 18px 20px 18px 44px;
+}
+.desktop .exp__item {
+  /* grow into spare height, but never shrink below the text — a shrinking basis
+     let short columns squeeze the entries into one another */
+  flex: 1 0 auto;
+}
+/* the last entry keeps its natural height so it sits flush with the card's bottom
+   padding — the two above absorb the slack, which spaces every dot equally */
+.desktop .exp__item:last-child {
+  flex: 0 0 auto;
 }
 /* project image cards: crisper corners + soft depth */
 .desktop .widget--projects .pjw__card {
@@ -3348,12 +3426,12 @@ body {
 /* View All → clean macOS accent button */
 .desktop .pjw__viewall {
   border-radius: 12px;
-  background: rgba(0, 122, 255, 0.12);
-  color: #007aff;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
   font-weight: 600;
 }
 .desktop .pjw__viewall svg {
-  stroke: #007aff;
+  stroke: #fff;
 }
 
 /* ===================================================================== */
@@ -4199,5 +4277,750 @@ body {
   }
   .ios .pjw__viewall svg {
     stroke: #fff;
+  }
+}
+
+/* ===================================================================== */
+/* ============ THREE-COLUMN DESKTOP (left · projects · music) ========== */
+/* ===================================================================== */
+/* Three columns of two small widgets each must fit side by side, so the tile
+   size becomes fluid: 6 tiles + 5 gaps + the desktop padding == the viewport,
+   capped at the original 172px so wide screens look exactly as before. */
+@media (min-width: 721px) {
+  :root {
+    --widget-sm: clamp(
+      104px,
+      calc((100vw - 2 * var(--desktop-pad) - 5 * var(--widget-gap)) / 6),
+      172px
+    );
+  }
+}
+
+/* ===================== SPOTIFY PLAYER WIDGET ===================== */
+.spw {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+  color: #fff;
+  border: 0;
+  border-radius: 26px;
+  /* Spotify's playlist page: the cover's colour bleeds from the top into #121212 */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(29, 185, 84, 0.44) 0%,
+      rgba(22, 101, 56, 0.32) 17%,
+      rgba(18, 18, 18, 0.88) 46%,
+      rgba(18, 18, 18, 0.94) 100%
+    ),
+    rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  box-shadow: none;
+}
+
+/* ---- brand row ---- */
+.spw__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 16px 18px 0;
+}
+.spw__logo {
+  width: 19px;
+  height: 19px;
+  fill: #1ed760;
+  flex: 0 0 auto;
+}
+.spw__brand {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #fff;
+}
+
+/* ---- playlist header: big square cover + title ----
+   The cover is the widget's flexible element: it soaks up whatever height the
+   column has spare, so the card fills its column without a dead strip while the
+   list and the player bar keep their natural size. */
+.spw__coverwrap {
+  flex: 1 1 auto;
+  min-height: 0; /* the cover shrinks first when the column is short */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 18px 0;
+}
+.spw__cover {
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  /* bound by BOTH axes so the art stays a true square: without the width half,
+     a tall column would stretch it into a rectangle once max-width clamped it */
+  max-height: min(300px, calc(var(--col-w) - 36px));
+  border-radius: 8px;
+  background: linear-gradient(145deg, #1ed760 0%, #12a150 52%, #0a5c34 100%);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spw__cover svg {
+  width: 58%;
+  height: 58%;
+  display: block;
+}
+.spw__cover-note {
+  fill: rgba(255, 255, 255, 0.94);
+}
+.spw__heroinfo {
+  flex: 0 0 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+  padding: 13px 18px 0;
+}
+.spw__kind {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.spw__plname {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.12;
+  color: #fff;
+}
+.spw__plmeta {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* ---- status line + the big green play button ---- */
+.spw__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px 2px;
+}
+.spw__bigplay {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: #1ed760;
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.42);
+  transition: transform 0.14s ease, background 0.14s ease;
+}
+.spw__bigplay:hover {
+  transform: scale(1.06);
+  background: #1fdf64;
+}
+.spw__bigplay svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+  display: block;
+}
+.spw__nowlabel {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.3;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---- track list ---- */
+.spw__list {
+  list-style: none;
+  flex: 0 0 auto; /* never shrink — every song in the playlist stays visible */
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 10px 4px;
+  margin: 0;
+}
+.spw__list::-webkit-scrollbar {
+  width: 6px;
+}
+.spw__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}
+.spw__row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.spw__row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.spw__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+}
+.spw__numic {
+  display: none;
+}
+.spw__numic svg {
+  width: 14px;
+  height: 14px;
+  fill: #1ed760;
+  display: block;
+}
+/* the playing row swaps its number for a speaker, Spotify-style */
+.spw__row--current .spw__numtext {
+  display: none;
+}
+.spw__row--current .spw__numic {
+  display: block;
+}
+.spw__rowmeta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.spw__rowtitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__row--current .spw__rowtitle {
+  color: #1ed760;
+}
+.spw__rowartist {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.58);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__rowdur {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- now-playing bar ---- */
+.spw__now {
+  flex: 0 0 auto;
+  padding: 11px 18px 15px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.22);
+}
+.spw__nowtop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.spw__nowmeta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.spw__nowtitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__nowartist {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+.spw__eqbar {
+  width: 3px;
+  height: 100%;
+  border-radius: 1.5px;
+  background: #1ed760;
+  transform: scaleY(0.1);
+  transform-origin: bottom;
+  transition: transform 0.06s linear;
+}
+.spw__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+}
+.spw__elapsed,
+.spw__total {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.spw__track {
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+.spw__fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: #fff;
+  transition: width 0.35s linear, background 0.2s ease;
+}
+.spw--playing .spw__fill {
+  background: #1ed760;
+}
+.spw__ctrls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 9px;
+}
+.spw__btn {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+.spw__btn:hover {
+  color: #fff;
+}
+.spw__btn svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  display: block;
+}
+.spw__btn--play {
+  width: 34px;
+  height: 34px;
+  background: #fff;
+  color: #000;
+}
+.spw__btn--play:hover {
+  transform: scale(1.07);
+  color: #000;
+}
+.spw__btn--play svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- desktop: fill the right column like the other cards ---- */
+.desktop .spw {
+  height: auto;
+  flex: 1 1 auto;
+  /* brand + title + actions + 3 rows + player bar, plus a legible cover */
+  min-height: 500px;
+}
+
+/* ---- mobile: the same player, sized for the iOS home ---- */
+@media (max-width: 720px) {
+  .spw.spw--ios {
+    padding: 0;
+    height: auto;
+    border-radius: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  }
+  .spw--ios .spw__head {
+    padding: 15px 16px 0;
+  }
+  .spw--ios .spw__hero {
+    padding: 13px 16px 0;
+  }
+  .spw--ios .spw__actions {
+    padding: 14px 16px 2px;
+  }
+  .spw--ios .spw__list {
+    overflow: visible; /* three rows: no scroller needed on the phone */
+    padding: 6px 8px 2px;
+  }
+  .spw--ios .spw__now {
+    padding: 11px 16px 14px;
+  }
+  /* touch targets */
+  .spw--ios .spw__row {
+    padding: 9px 8px;
+  }
+  .spw--ios .spw__btn {
+    width: 38px;
+    height: 38px;
+  }
+  .spw--ios .spw__btn--play {
+    width: 40px;
+    height: 40px;
+  }
+  .spw--ios .spw__btn svg {
+    width: 21px;
+    height: 21px;
+  }
+  .spw--ios .spw__btn--play svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* the phone gives the cover a fixed, comfortable size instead of flexing it */
+@media (max-width: 720px) {
+  .spw--ios .spw__coverwrap {
+    flex: 0 0 auto;
+    height: 148px;
+    padding: 13px 16px 0;
+  }
+  .spw--ios .spw__heroinfo {
+    padding: 12px 16px 0;
+  }
+}
+
+/* Narrow desktops shrink the columns (see the fluid --widget-sm above). Once a
+   role and its date no longer sit on one line, stack them for every entry so the
+   timeline stays uniform instead of wrapping only the longest title. */
+/* Wide desktop columns are roomy enough to put the date beside the role again. */
+@media (min-width: 1181px) {
+  .desktop .exp__row {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+  }
+  .desktop .exp__date {
+    padding-top: 2px;
+  }
+}
+@media (min-width: 721px) and (max-width: 1180px) {
+  /* stacked rows are a line taller, so the card needs more room before fit() scales */
+  .desktop .widget--exp {
+    min-height: 285px;
+  }
+}
+
+/* ===================== WALLPAPER CROSSFADE LAYERS =====================
+   Two stacked layers behind the desktop; the rotation fades one into the other. */
+.wp-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.1s ease;
+}
+.wp-layer--on {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wp-layer {
+    transition: none;
+  }
+}
+
+/* ===================================================================== */
+/* ========== SPOTIFY WIDGET — COMPACT "NOW PLAYING" CARD ============== */
+/* ===================================================================== */
+/* Modelled on the iOS Control Center card: art + title/artist + live bars,
+   a scrubber row with elapsed and remaining, then the transport row. The slot
+   that holds the audio-output button on iOS holds the full-size toggle here. */
+.spw__mini {
+  display: none;
+  flex-direction: column;
+  padding: 16px 18px 15px;
+  gap: 14px;
+}
+.spw--compact .spw__mini {
+  display: flex;
+}
+/* in compact form the expanded player's sections step aside */
+.spw--compact .spw__head,
+.spw--compact .spw__coverwrap,
+.spw--compact .spw__heroinfo,
+.spw--compact .spw__actions,
+.spw--compact .spw__list,
+.spw--compact .spw__now {
+  display: none;
+}
+/* the card hugs its content instead of filling the column */
+.desktop .spw--compact {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  /* flatter tint than the full player, like the reference's art-derived colour */
+  background:
+    linear-gradient(150deg, rgba(29, 185, 84, 0.3) 0%, rgba(18, 18, 18, 0.9) 68%),
+    rgba(18, 18, 18, 0.74);
+}
+
+.spw__mini-top {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.spw__mini-art {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #1ed760 0%, #12a150 52%, #0a5c34 100%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spw__mini-art svg {
+  width: 58%;
+  height: 58%;
+  display: block;
+}
+.spw__mini-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.spw__mini-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__mini-artist {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.56);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spw__mini-top .spw__eq {
+  height: 17px;
+}
+
+.spw__mini-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.spw__mini-bar .spw__elapsed,
+.spw__mini-bar .spw__total {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+.spw__mini-bar .spw__track {
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* transport: prev/play/next centred, the size toggle pinned to the right */
+.spw__mini-ctrls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  /* Symmetric inset: keeps the trio centred on the card (like the reference)
+     while reserving the right-hand slot for the size toggle, which is absolutely
+     positioned against the padding box and so still sits flush right. */
+  padding: 2px 34px;
+}
+.spw__mini-btn {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, 0.94);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+.spw__mini-btn svg {
+  width: 27px;
+  height: 27px;
+  fill: currentColor;
+  display: block;
+}
+.spw__mini-btn:hover {
+  transform: scale(1.08);
+}
+.spw__mini-btn--play svg {
+  width: 25px;
+  height: 25px;
+}
+.spw__mini-expand {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  color: rgba(255, 255, 255, 0.62);
+}
+.spw__mini-expand svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+}
+.spw__mini-expand:hover {
+  color: #fff;
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* collapse control in the expanded player's brand row */
+.spw__head {
+  justify-content: space-between;
+}
+.spw__head .spw__logo,
+.spw__head .spw__brand {
+  flex: 0 0 auto;
+}
+.spw__brand {
+  margin-right: auto;
+}
+.spw__collapse {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+.spw__collapse svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  display: block;
+}
+.spw__collapse:hover {
+  color: #fff;
+  transform: scale(1.08);
+}
+
+/* Whichever view becomes visible eases in rather than popping. Going from
+   display:none to a visible box restarts the animation, so this fires on each
+   size change (and once, harmlessly, on first paint). */
+@media (prefers-reduced-motion: no-preference) {
+  .spw--compact .spw__mini,
+  .spw:not(.spw--compact) .spw__coverwrap,
+  .spw:not(.spw--compact) .spw__list {
+    animation: spw-fade 0.36s ease both;
+  }
+}
+@keyframes spw-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Narrower columns: tighten the compact transport so the centred trio can never
+   reach the size toggle pinned at the right. This has to sit AFTER the compact
+   card's base rules — at equal specificity, source order decides, media query or
+   not, so declaring it earlier in the file would silently lose. */
+@media (min-width: 721px) and (max-width: 1180px) {
+  .spw__mini-ctrls {
+    gap: 16px;
+    padding: 2px 32px;
+  }
+  .spw__mini-btn {
+    width: 33px;
+    height: 33px;
+  }
+  .spw__mini-btn svg {
+    width: 23px;
+    height: 23px;
+  }
+  .spw__mini-btn--play svg {
+    width: 21px;
+    height: 21px;
+  }
+  .spw__mini-expand {
+    width: 30px;
+    height: 30px;
+  }
+  .spw__mini-expand svg {
+    width: 17px;
+    height: 17px;
   }
 }

@@ -1,3 +1,90 @@
+/* ===================== WALLPAPER — AUTO ROTATION =====================
+   Three wallpapers, crossfading into one another every 30 seconds. Two stacked
+   fixed layers sit behind the desktop (z-index -1, same as the old video
+   wallpaper) and swap opacity, so a change never snaps or flashes. */
+(function () {
+  const WALLPAPERS = [
+    { id: "bigsur", name: "Big Sur", img: "macos-wallpaper.jpg", bg: "#1c3a52" },
+    { id: "monterey", name: "Monterey", img: "wp-monterey.jpg", bg: "#3a2a5a" },
+    { id: "sky", name: "Sky", img: "wp-radial.jpg", bg: "#4a90d9" },
+  ];
+  const EVERY_MS = 30000;
+
+  function makeLayer() {
+    const el = document.createElement("div");
+    el.className = "wp-layer";
+    document.body.insertBefore(el, document.body.firstChild);
+    return el;
+  }
+
+  const layers = [makeLayer(), makeLayer()];
+  let front = 0;
+  let index = 0;
+  let timer = null;
+
+  function paint(el, w) {
+    el.style.backgroundColor = w.bg;
+    el.style.backgroundImage = 'url("' + w.img + '")';
+  }
+
+  function show(i, instant) {
+    index = ((i % WALLPAPERS.length) + WALLPAPERS.length) % WALLPAPERS.length;
+    const w = WALLPAPERS[index];
+    const incoming = layers[1 - front];
+    paint(incoming, w);
+    if (instant) {
+      incoming.style.transition = "none";
+      layers[front].style.transition = "none";
+    }
+    // let the new background land before the fade starts
+    requestAnimationFrame(() => {
+      incoming.classList.add("wp-layer--on");
+      layers[front].classList.remove("wp-layer--on");
+      front = 1 - front;
+      if (instant) {
+        requestAnimationFrame(() => {
+          layers[0].style.transition = "";
+          layers[1].style.transition = "";
+        });
+      }
+    });
+  }
+
+  function start() {
+    if (timer) return;
+    timer = setInterval(() => show(index + 1), EVERY_MS);
+  }
+  function stop() {
+    clearInterval(timer);
+    timer = null;
+  }
+
+  // keep the whole set warm so a crossfade never reveals a half-loaded image
+  WALLPAPERS.forEach((w) => {
+    const img = new Image();
+    img.src = w.img;
+  });
+
+  // the layers own the wallpaper from here on; drop the CSS one off the body
+  document.body.style.background = WALLPAPERS[0].bg;
+  show(0, true);
+  start();
+
+  // a background tab shouldn't burn through the rotation unseen
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+
+  window.Wallpaper = {
+    list: WALLPAPERS,
+    show: show,
+    start: start,
+    stop: stop,
+    current: () => WALLPAPERS[index],
+  };
+})();
+
 /* ===================== RESPONSIVE SCALE-TO-FIT ===================== */
 (function () {
   const screen = document.querySelector(".screen");
@@ -7,34 +94,58 @@
   // Keep the widget columns fully above the dock (macOS behaviour): when the
   // viewport is too short, scale each column down so nothing tucks under the dock.
   const desktop = document.querySelector(".desktop");
-  const leftCol = document.querySelector(".widget-col--left");
-  const rightCol = document.querySelector(".widget-col--right");
+  const cols = [...document.querySelectorAll(".desktop .widget-col")];
   const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+
+  // The columns stretch to the desktop's height, so offsetHeight always equals the
+  // space available — it can't tell us whether the content actually fits. Add up
+  // what the children really need instead: fixed tiles contribute their own height,
+  // flexible cards (Experience / Featured Projects) contribute their min-height.
+  function colNeed(col) {
+    if (!col) return 0;
+    const cs = getComputedStyle(col);
+    const gap = parseFloat(cs.rowGap || cs.gap) || 0;
+    let total = 0;
+    let count = 0;
+    Array.prototype.forEach.call(col.children, (child) => {
+      const s = getComputedStyle(child);
+      if (s.display === "none") return;
+      const min = parseFloat(s.minHeight);
+      const grows = parseFloat(s.flexGrow) > 0;
+      total += grows && min ? min : child.offsetHeight;
+      count++;
+    });
+    return total + gap * Math.max(0, count - 1);
+  }
+
+  // each column shrinks toward the edge it hugs, so the row stays visually anchored
+  function originFor(col) {
+    if (col.classList.contains("widget-col--left")) return "top left";
+    if (col.classList.contains("widget-col--right")) return "top right";
+    return "top center";
+  }
 
   function fit() {
     // reset first so measurements aren't affected by a prior scale
-    [leftCol, rightCol].forEach((c) => {
-      if (c) c.style.transform = "none";
+    cols.forEach((c) => {
+      c.style.transform = "none";
+      c.style.height = "";
     });
-    if (!desktop || isMobile()) return; // phone layout stacks + scrolls instead
+    if (!desktop || isMobile() || !cols.length) return; // phone layout stacks + scrolls instead
 
     const cs = getComputedStyle(desktop);
     const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     const avail = desktop.clientHeight - padY;
-    const need = Math.max(
-      leftCol ? leftCol.offsetHeight : 0,
-      rightCol ? rightCol.offsetHeight : 0
-    );
+    const need = cols.reduce((m, c) => Math.max(m, colNeed(c)), 0);
     if (need > avail && need > 0) {
       const s = Math.max(0.5, avail / need);
-      if (leftCol) {
-        leftCol.style.transformOrigin = "top left";
-        leftCol.style.transform = "scale(" + s + ")";
-      }
-      if (rightCol) {
-        rightCol.style.transformOrigin = "top right";
-        rightCol.style.transform = "scale(" + s + ")";
-      }
+      // pin each column to its natural height first, otherwise it stays stretched to
+      // `avail` and scaling it would reintroduce the empty strip at the bottom
+      cols.forEach((c) => {
+        c.style.height = need + "px";
+        c.style.transformOrigin = originFor(c);
+        c.style.transform = "scale(" + s + ")";
+      });
     }
   }
 
@@ -1334,11 +1445,9 @@
   // class -> label mapping (in dock order)
   const TIPS = {
     "dock__app--finder": "Projects",
-    "dock__app--notes": "About Me",
-    "dock__app--music": "Music",
-    "dock__app--settings": "System Settings",
+    "dock__app--notes": "About",
     "dock__app--acrobat": "Resume",
-    "dock__app--mail": "Contact Me",
+    "dock__app--mail": "Contact",
     "dock__app--linkedin": "LinkedIn",
     "dock__app--github": "GitHub",
   };
@@ -1457,42 +1566,56 @@
   });
 })();
 
-/* ===================== MUSIC → GENERATIVE LO-FI PLAYER ===================== */
+/* ===================== LO-FI AUDIO ENGINE (shared) =====================
+   One generative Web-Audio engine, driven by two surfaces: the Music app
+   window and the Spotify player widget on the desktop. Both subscribe to the
+   same state, so whatever you do in one is reflected instantly in the other. */
 (function () {
-  const trigger = document.querySelector(".dock__app--music");
-  const screen = document.querySelector(".screen");
-  if (!trigger || !screen) return;
-
-  // ---- traffic-light glyphs (match the other windows) ----
-  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
-  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
-  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
-  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
-
-  // ---- transport glyphs ----
-  const PLAY = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>';
-  const PAUSE = '<svg class="music__glyph" viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.6" height="13" rx="1.2"/><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.2"/></svg>';
-  const PREV = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M18 6 10 12 18 18Z"/><rect x="6.4" y="6" width="2.4" height="12" rx="1"/></svg>';
-  const NEXT = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M6 6 14 12 6 18Z"/><rect x="15.2" y="6" width="2.4" height="12" rx="1"/></svg>';
-
-  // ---- "tracks" = generative moods (chords are semitone offsets from root) ----
+  // "tracks" = generative moods (chords are semitone offsets from root).
+  // `dur` is the nominal length used by the playlist UI + auto-advance.
   const TRACKS = [
     { name: "Midnight Study", artist: "Lo-Fi · Generative", bpm: 72, root: 220.0, wave: "sine",
-      chords: [[0, 3, 7, 10], [-2, 3, 5, 10], [-4, 0, 3, 7], [-5, -2, 2, 5]], rain: false },
+      chords: [[0, 3, 7, 10], [-2, 3, 5, 10], [-4, 0, 3, 7], [-5, -2, 2, 5]], rain: false, dur: 204 },
     { name: "Rainy Focus", artist: "Lo-Fi · Generative", bpm: 66, root: 196.0, wave: "triangle",
-      chords: [[0, 3, 7, 10], [5, 8, 12, 15], [-2, 2, 5, 9], [-4, 0, 3, 7]], rain: true },
+      chords: [[0, 3, 7, 10], [5, 8, 12, 15], [-2, 2, 5, 9], [-4, 0, 3, 7]], rain: true, dur: 222 },
     { name: "Sunday Coding", artist: "Lo-Fi · Generative", bpm: 78, root: 261.63, wave: "sine",
-      chords: [[0, 4, 7, 11], [-3, 2, 5, 9], [-5, 0, 4, 7], [2, 5, 9, 12]], rain: false },
+      chords: [[0, 4, 7, 11], [-3, 2, 5, 9], [-5, 0, 4, 7], [2, 5, 9, 12]], rain: false, dur: 189 },
   ];
 
-  const mtof = (root, semis) => root * Math.pow(2, semis / 12);
+  const PLAYLIST = {
+    title: "Lo-Fi Coding Session",
+    owner: "Monu Prajapat",
+  };
 
-  let win = null; // guard against multiple windows
-  // audio state (single window at a time)
+  const mtof = (root, semis) => root * Math.pow(2, semis / 12);
+  const fmt = (s) => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+
+  // audio state (a single engine for the whole page)
   let actx, master, analyser, freqData, NOISE, vol = 0.6;
   let playing = false, cur = 0, step = 0, nextT = 0;
   let sched = null, rafId = null, elapsed = 0, elapsedTimer = null;
   let crackle = null, rain = null;
+
+  const listeners = new Set(); // state subscribers (UI surfaces)
+  const meters = new Set();    // arrays of bar elements to animate from the analyser
+
+  function getState() {
+    return {
+      playing: playing,
+      index: cur,
+      track: TRACKS[cur],
+      elapsed: elapsed,
+      volume: vol,
+      tracks: TRACKS,
+      playlist: PLAYLIST,
+    };
+  }
+  function emit() {
+    const s = getState();
+    listeners.forEach((fn) => {
+      try { fn(s); } catch (e) {}
+    });
+  }
 
   function noiseBuffer() {
     const len = actx.sampleRate * 2;
@@ -1586,18 +1709,129 @@
     crackle = noiseLayer("highpass", 5200, 0.012);   // subtle vinyl hiss
   }
 
-  function draw(bars) {
+  // ---- analyser-driven bars, shared by every mounted meter ----
+  function restBars(bars) {
+    bars.forEach((b) => (b.style.transform = "scaleY(0.1)"));
+  }
+  function vizFrame() {
+    if (!analyser) { rafId = null; return; }
     analyser.getByteFrequencyData(freqData);
-    const n = bars.length, half = freqData.length;
-    for (let i = 0; i < n; i++) {
-      const idx = Math.floor(((i + 1) / n) * half);
-      const v = freqData[Math.min(idx, half - 1)] / 255;
-      bars[i].style.transform = "scaleY(" + (0.1 + v * 1.05).toFixed(3) + ")";
-    }
-    rafId = requestAnimationFrame(() => draw(bars));
+    const half = freqData.length;
+    meters.forEach((bars) => {
+      const n = bars.length;
+      for (let i = 0; i < n; i++) {
+        const idx = Math.floor(((i + 1) / n) * half);
+        const v = freqData[Math.min(idx, half - 1)] / 255;
+        bars[i].style.transform = "scaleY(" + (0.1 + v * 1.05).toFixed(3) + ")";
+      }
+    });
+    rafId = requestAnimationFrame(vizFrame);
+  }
+  function startViz() {
+    if (rafId == null) rafId = requestAnimationFrame(vizFrame);
+  }
+  function stopViz() {
+    if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    meters.forEach(restBars);
   }
 
-  const fmt = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  function onSecond() {
+    elapsed++;
+    // a real playlist rolls on to the next song when this one ends
+    if (elapsed >= TRACKS[cur].dur) { switchTo(cur + 1); return; }
+    emit();
+  }
+
+  function play() {
+    ensureAudio();
+    if (actx.state === "suspended") actx.resume();
+    playing = true;
+    nextT = actx.currentTime + 0.06;
+    if (TRACKS[cur].rain && !rain) rain = noiseLayer("highpass", 900, 0.05);
+    if (!sched) sched = setInterval(scheduler, 25);
+    if (!elapsedTimer) elapsedTimer = setInterval(onSecond, 1000);
+    startViz();
+    emit();
+  }
+  function pause() {
+    playing = false;
+    clearInterval(sched); sched = null;
+    clearInterval(elapsedTimer); elapsedTimer = null;
+    stopViz();
+    if (actx) actx.suspend();
+    emit();
+  }
+  function toggle() { playing ? pause() : play(); }
+
+  function switchTo(i) {
+    cur = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
+    step = 0; elapsed = 0;
+    if (rain && !TRACKS[cur].rain) { stopLayer(rain); rain = null; }
+    if (playing) {
+      if (TRACKS[cur].rain && !rain && actx) rain = noiseLayer("highpass", 900, 0.05);
+      if (actx) nextT = actx.currentTime + 0.06;
+    }
+    emit();
+  }
+
+  // clicking a row in the playlist: play it, or pause if it's already the one playing
+  function playTrack(i) {
+    if (i === cur) { toggle(); return; }
+    switchTo(i);
+    if (!playing) play(); else emit();
+  }
+
+  function setVolume(v) {
+    vol = Math.min(1, Math.max(0, v));
+    if (master && actx) master.gain.setTargetAtTime(vol, actx.currentTime, 0.02);
+    emit();
+  }
+
+  window.LoFi = {
+    TRACKS: TRACKS,
+    PLAYLIST: PLAYLIST,
+    fmt: fmt,
+    getState: getState,
+    subscribe: function (fn) {
+      listeners.add(fn);
+      fn(getState()); // paint immediately so a new surface starts in sync
+      return function () { listeners.delete(fn); };
+    },
+    addMeter: function (bars) {
+      meters.add(bars);
+      if (playing) startViz(); else restBars(bars);
+    },
+    removeMeter: function (bars) { meters.delete(bars); },
+    play: play,
+    pause: pause,
+    toggle: toggle,
+    switchTo: switchTo,
+    playTrack: playTrack,
+    next: function () { switchTo(cur + 1); },
+    prev: function () { switchTo(cur - 1); },
+    setVolume: setVolume,
+  };
+})();
+
+/* ===================== MUSIC APP WINDOW ===================== */
+(function () {
+  const trigger = document.querySelector(".dock .dock__app--music");
+  const screen = document.querySelector(".screen");
+  if (!trigger || !screen || !window.LoFi) return;
+
+  // ---- traffic-light glyphs (match the other windows) ----
+  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
+
+  // ---- transport glyphs ----
+  const PLAY = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>';
+  const PAUSE = '<svg class="music__glyph" viewBox="0 0 24 24"><rect x="7" y="5.5" width="3.6" height="13" rx="1.2"/><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.2"/></svg>';
+  const PREV = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M18 6 10 12 18 18Z"/><rect x="6.4" y="6" width="2.4" height="12" rx="1"/></svg>';
+  const NEXT = '<svg class="music__glyph" viewBox="0 0 24 24"><path d="M6 6 14 12 6 18Z"/><rect x="15.2" y="6" width="2.4" height="12" rx="1"/></svg>';
+
+  let win = null; // guard against multiple windows
 
   function open(originEl) {
     if (win) return;
@@ -1663,71 +1897,34 @@
     const countEl = win.querySelector(".music__count");
     const slider = win.querySelector(".music__slider");
 
-    function paintTrack() {
-      const T = TRACKS[cur];
-      trackEl.textContent = T.name;
-      artistEl.textContent = T.artist;
-      labelEl.textContent = T.name.split(" ")[0];
-      root.dataset.track = String(cur);
-      countEl.textContent = (cur + 1) + " / " + TRACKS.length;
-    }
-    function updTime() { elapsedEl.textContent = fmt(elapsed); }
-    function setPlayUI(on) {
-      playBtn.innerHTML = on ? PAUSE : PLAY;
-      playBtn.setAttribute("aria-label", on ? "Pause" : "Play");
-      root.classList.toggle("music--playing", on);
-      if (!on) bars.forEach((b) => (b.style.transform = "scaleY(0.1)"));
-    }
-
-    function play() {
-      ensureAudio();
-      if (actx.state === "suspended") actx.resume();
-      playing = true;
-      nextT = actx.currentTime + 0.06;
-      if (TRACKS[cur].rain && !rain) rain = noiseLayer("highpass", 900, 0.05);
-      sched = setInterval(scheduler, 25);
-      draw(bars);
-      elapsedTimer = setInterval(() => { elapsed++; updTime(); }, 1000);
-      setPlayUI(true);
-    }
-    function pause() {
-      playing = false;
-      clearInterval(sched); sched = null;
-      cancelAnimationFrame(rafId); rafId = null;
-      clearInterval(elapsedTimer); elapsedTimer = null;
-      if (actx) actx.suspend();
-      setPlayUI(false);
-    }
-    function toggle() { playing ? pause() : play(); }
-    function switchTo(i) {
-      cur = (i + TRACKS.length) % TRACKS.length;
-      step = 0; elapsed = 0; updTime();
-      paintTrack();
-      if (rain && !TRACKS[cur].rain) { stopLayer(rain); rain = null; }
-      if (playing) {
-        if (TRACKS[cur].rain && !rain && actx) rain = noiseLayer("highpass", 900, 0.05);
-        nextT = actx.currentTime + 0.06;
-      }
+    // the window is just a view onto the shared engine
+    function render(s) {
+      trackEl.textContent = s.track.name;
+      artistEl.textContent = s.track.artist;
+      labelEl.textContent = s.track.name.split(" ")[0];
+      root.dataset.track = String(s.index);
+      countEl.textContent = (s.index + 1) + " / " + s.tracks.length;
+      elapsedEl.textContent = LoFi.fmt(s.elapsed);
+      playBtn.innerHTML = s.playing ? PAUSE : PLAY;
+      playBtn.setAttribute("aria-label", s.playing ? "Pause" : "Play");
+      root.classList.toggle("music--playing", s.playing);
+      // don't yank the slider out from under a drag
+      if (document.activeElement !== slider) slider.value = Math.round(s.volume * 100);
     }
 
-    playBtn.addEventListener("click", toggle);
-    win.querySelector(".music__prev").addEventListener("click", () => switchTo(cur - 1));
-    win.querySelector(".music__next").addEventListener("click", () => switchTo(cur + 1));
-    slider.addEventListener("input", () => {
-      vol = slider.value / 100;
-      if (master) master.gain.setTargetAtTime(vol, actx.currentTime, 0.02);
-    });
+    LoFi.addMeter(bars);
+    const unsubscribe = LoFi.subscribe(render);
 
-    paintTrack();
-    setPlayUI(false);
+    playBtn.addEventListener("click", () => LoFi.toggle());
+    win.querySelector(".music__prev").addEventListener("click", () => LoFi.prev());
+    win.querySelector(".music__next").addEventListener("click", () => LoFi.next());
+    slider.addEventListener("input", () => LoFi.setVolume(slider.value / 100));
 
     // ---- window chrome (close / minimize / maximize) ----
+    // closing is just dismissing this view — playback carries on in the widget
     function close() {
-      pause();
-      stopLayer(crackle); crackle = null;
-      stopLayer(rain); rain = null;
-      if (actx) { try { actx.close(); } catch (e) {} actx = null; }
-      cur = 0; step = 0; elapsed = 0;
+      LoFi.removeMeter(bars);
+      unsubscribe();
       modal.classList.remove("winmodal--open");
       setTimeout(() => modal.remove(), 330);
       document.removeEventListener("keydown", onKey);
@@ -1760,29 +1957,8 @@
   const screen = document.querySelector(".screen");
   if (!trigger || !screen) return;
 
-  const WALLPAPERS = [
-    // ---- Live Wallpapers (looping video) ----
-    { id: "live-sonoma-light", name: "Sonoma", section: "Live Wallpapers", video: "wp-live-sonoma-light.mp4", poster: "wp-live-sonoma-light-poster.jpg", bg: "#3a6b8f" },
-    { id: "live-sonoma-dark", name: "Sonoma Dark", section: "Live Wallpapers", video: "wp-live-sonoma-dark.mp4", poster: "wp-live-sonoma-dark-poster.jpg", bg: "#16202e" },
-    // ---- macOS (photo / graphic) ----
-    { id: "bigsur", name: "Big Sur", section: "macOS", img: "macos-wallpaper.jpg", bg: "#1c3a52" },
-    { id: "sonoma", name: "Sonoma", section: "macOS", img: "wp-sonoma.jpg", bg: "#1f5b46" },
-    { id: "ventura", name: "Ventura", section: "macOS", img: "wp-ventura.jpg", bg: "#3a2a6e" },
-    { id: "monterey", name: "Monterey", section: "macOS", img: "wp-monterey.jpg", bg: "#3a2a5a" },
-    // ---- Colors ----
-    { id: "sky", name: "Sky", section: "Colors", img: "wp-radial.jpg", bg: "#4a90d9" },
-    { id: "blue", name: "Blue", section: "Colors", img: "wp-blue.jpg", bg: "#1a3a6e" },
-    { id: "purple", name: "Purple", section: "Colors", img: "wp-purple.jpg", bg: "#4a2a86" },
-    { id: "pink", name: "Pink", section: "Colors", img: "wp-pink.jpg", bg: "#b03a6e" },
-    { id: "yellow", name: "Yellow", section: "Colors", img: "wp-yellow.jpg", bg: "#d9d06a" },
-    { id: "green", name: "Green", section: "Colors", img: "wp-green.jpg", bg: "#2f7d4a" },
-    { id: "imac-blue", name: "iMac Blue", section: "Colors", img: "wp-imac-blue.jpg", bg: "#2a5aaa" },
-    { id: "imac-orange", name: "iMac Orange", section: "Colors", img: "wp-imac-orange.jpg", bg: "#d9772a" },
-    { id: "imac-purple", name: "iMac Purple", section: "Colors", img: "wp-imac-purple.jpg", bg: "#7a4aaa" },
-    { id: "imac-pink", name: "iMac Pink", section: "Colors", img: "wp-imac-pink.jpg", bg: "#d94a8a" },
-    { id: "imac-silver", name: "iMac Silver", section: "Colors", img: "wp-imac-silver.jpg", bg: "#b0b0b8" },
-    { id: "imac-yellow", name: "iMac Yellow", section: "Colors", img: "wp-imac-yellow.jpg", bg: "#e0c94a" },
-  ];
+  // single source of truth: the rotation module's three wallpapers
+  const WALLPAPERS = (window.Wallpaper && window.Wallpaper.list) || [];
   const KEY = "mp-wallpaper";
   const store = {
     get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
@@ -1803,23 +1979,11 @@
     wpVideo.style.display = "none";
     document.body.insertBefore(wpVideo, document.body.firstChild);
   }
+  // picking by hand takes over from the timer and reuses the module's crossfade
   function applyWallpaper(w) {
-    if (w.video) {
-      ensureVideo();
-      if (wpVideo.getAttribute("data-src") !== w.video) {
-        wpVideo.src = w.video;
-        wpVideo.setAttribute("data-src", w.video);
-      }
-      if (w.poster) wpVideo.poster = w.poster;
-      wpVideo.style.display = "block";
-      document.body.style.background = w.bg;
-      const pr = wpVideo.play();
-      if (pr && pr.catch) pr.catch(() => {});
-    } else {
-      if (wpVideo) wpVideo.style.display = "none";
-      document.body.style.background =
-        w.bg + ' url("' + w.img + '") center / cover no-repeat fixed';
-    }
+    if (!window.Wallpaper) return;
+    window.Wallpaper.stop();
+    window.Wallpaper.show(WALLPAPERS.indexOf(w));
   }
   // restore the saved wallpaper on load
   let currentId = store.get() || WALLPAPERS[2].id;
@@ -1971,15 +2135,15 @@
   if (!ios) return;
 
   // map each iOS app slot to the real trigger element it should mirror + open
+  // scoped to `.dock`: the clones we append below reuse these same classes, so an
+  // unscoped selector would start resolving to a previously-cloned icon
   const MAP = {
-    finder: ".dock__app--finder",
-    notes: ".dock__app--notes",
-    music: ".dock__app--music",
-    settings: ".dock__app--settings",
-    acrobat: ".dock__app--acrobat",
-    mail: ".dock__app--mail",
-    linkedin: ".dock__app--linkedin",
-    github: ".dock__app--github",
+    finder: ".dock .dock__app--finder",
+    notes: ".dock .dock__app--notes",
+    acrobat: ".dock .dock__app--acrobat",
+    mail: ".dock .dock__app--mail",
+    linkedin: ".dock .dock__app--linkedin",
+    github: ".dock .dock__app--github",
     ttt: '[data-game="ttt"]',
     memory: '[data-game="memory"]',
   };
@@ -2140,5 +2304,203 @@
     dock.classList.remove("dock--magnifying");
     reset();
     apps = [];
+  });
+})();
+
+/* ===================== MENU BAR ITEMS → REAL APPS ===================== */
+(function () {
+  // Each menu title mirrors the dock trigger that already knows how to open it.
+  // Scope every lookup to `.dock`: the iOS home clones these icons (classes and
+  // all) earlier in the DOM, and those clones have had their href stripped — an
+  // unscoped querySelector would grab the dead clone instead of the real icon.
+  const MENU = {
+    projects: ".dock .dock__app--finder",
+    about: ".dock .dock__app--notes",
+    resume: ".dock .dock__app--acrobat",
+    contact: ".dock .dock__app--mail",
+  };
+
+  document.querySelectorAll(".menubar__item[data-menu]").forEach((item) => {
+    const target = document.querySelector(MENU[item.dataset.menu]);
+    if (!target) return;
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      target.click();
+    });
+  });
+})();
+
+/* ===================== SPOTIFY PLAYER WIDGET =====================
+   A Spotify-styled surface over the shared lo-fi engine. Every instance
+   (desktop column + iOS home) renders from the same state, so the Music app
+   window, the desktop widget and the phone widget never disagree. */
+(function () {
+  const widgets = [...document.querySelectorAll("[data-spw]")];
+  if (!widgets.length || !window.LoFi) return;
+
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.6" y="5.2" width="3.9" height="13.6" rx="1.2"/><rect x="13.5" y="5.2" width="3.9" height="13.6" rx="1.2"/></svg>';
+  const ICON_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5.5 9.5 12 18 18.5Z"/><rect x="5.4" y="5.5" width="2.6" height="13" rx="1.1"/></svg>';
+  const ICON_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5 14.5 12 6 18.5Z"/><rect x="16" y="5.5" width="2.6" height="13" rx="1.1"/></svg>';
+  // the row's leading slot: track number when idle, speaker when it's the current one
+  const ICON_SOUND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6"/></svg>';
+
+  // compact card uses the reference's chunky double-triangle transport
+  const MINI_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 4.2v15.6L19.5 12z"/></svg>';
+  const MINI_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.6" y="4.2" width="4.9" height="15.6" rx="1.7"/><rect x="13.5" y="4.2" width="4.9" height="15.6" rx="1.7"/></svg>';
+  const MINI_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12 21.5 5.6v12.8z"/><path d="M2.5 12 12 5.6v12.8z"/></svg>';
+  const MINI_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12 2.5 18.4V5.6z"/><path d="M21.5 12 12 18.4V5.6z"/></svg>';
+  // replaces the audio-output button from the reference card
+  const ICON_EXPAND = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H4v6"/><path d="M14 20h6v-6"/><path d="M4 4l6.5 6.5"/><path d="M20 20l-6.5-6.5"/></svg>';
+  const ICON_COLLAPSE = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h6V4"/><path d="M20 14h-6v6"/><path d="M10 10 3.5 3.5"/><path d="M14 14l6.5 6.5"/></svg>';
+
+  const totalSecs = LoFi.TRACKS.reduce((n, t) => n + t.dur, 0);
+  const playlistMeta =
+    LoFi.PLAYLIST.owner + " · " + LoFi.TRACKS.length + " songs, " +
+    Math.round(totalSecs / 60) + " min";
+
+  widgets.forEach((root) => {
+    const q = (sel) => root.querySelector(sel);
+    const qa = (sel) => [...root.querySelectorAll(sel)];
+
+    const listEl = q("[data-spw-list]");
+    const metaEl = q("[data-spw-meta]");
+    const statusEl = q("[data-spw-status]");
+    const toggles = qa("[data-spw-toggle]");
+    const mini = q(".spw__mini");
+    // a control can live in the compact card, the full view, or both — write to all
+    const setText = (sel, txt) => qa(sel).forEach((e) => (e.textContent = txt));
+
+    if (metaEl) metaEl.textContent = playlistMeta;
+
+    // ---- static chrome (compact card gets the reference's icon set) ----
+    qa("[data-spw-prev]").forEach((b) => (b.innerHTML = b.closest(".spw__mini") ? MINI_PREV : ICON_PREV));
+    qa("[data-spw-next]").forEach((b) => (b.innerHTML = b.closest(".spw__mini") ? MINI_NEXT : ICON_NEXT));
+    const expandBtn = q("[data-spw-expand]");
+    const collapseBtn = q("[data-spw-collapse]");
+    if (expandBtn) expandBtn.innerHTML = ICON_EXPAND;
+    if (collapseBtn) collapseBtn.innerHTML = ICON_COLLAPSE;
+
+    // ---- playlist rows, built from the engine's track list ----
+    LoFi.TRACKS.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.className = "spw__row";
+      li.dataset.index = String(i);
+      li.innerHTML =
+        '<span class="spw__num"><span class="spw__numtext">' + (i + 1) + "</span>" +
+          '<span class="spw__numic">' + ICON_SOUND + "</span></span>" +
+        '<span class="spw__rowmeta">' +
+          '<span class="spw__rowtitle">' + t.name + "</span>" +
+          '<span class="spw__rowartist">' + t.artist + "</span>" +
+        "</span>" +
+        '<span class="spw__rowdur">' + LoFi.fmt(t.dur) + "</span>";
+      li.addEventListener("click", () => LoFi.playTrack(i));
+      listEl.appendChild(li);
+    });
+    const rows = [...listEl.children];
+
+    // ---- equaliser bars fed by the shared analyser (one meter per view) ----
+    qa("[data-spw-eq]").forEach((eq) => {
+      const bars = [];
+      for (let i = 0; i < 4; i++) {
+        const b = document.createElement("i");
+        b.className = "spw__eqbar";
+        eq.appendChild(b);
+        bars.push(b);
+      }
+      LoFi.addMeter(bars);
+    });
+
+    // ---- transport ----
+    toggles.forEach((b) => b.addEventListener("click", () => LoFi.toggle()));
+    qa("[data-spw-prev]").forEach((b) => b.addEventListener("click", () => LoFi.prev()));
+    qa("[data-spw-next]").forEach((b) => b.addEventListener("click", () => LoFi.next()));
+
+    // ---- compact <-> full size, animated ----
+    if (mini && expandBtn) {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let busy = false;
+
+      function setSize(compact) {
+        if (busy || root.classList.contains("spw--compact") === compact) return;
+        expandBtn.setAttribute("aria-expanded", String(!compact));
+
+        if (reduced) {
+          root.classList.toggle("spw--compact", compact);
+          window.dispatchEvent(new Event("resize"));
+          return;
+        }
+
+        // measure where we are, swap the view, measure where we land, then
+        // animate between the two — the card can't transition to `auto`/flex on
+        // its own, so it is pinned to explicit pixels for the duration
+        const from = root.getBoundingClientRect().height;
+        root.classList.toggle("spw--compact", compact);
+        root.style.transition = "none";
+        root.style.flex = "";
+        root.style.height = "";
+        const to = root.getBoundingClientRect().height;
+
+        busy = true;
+        root.style.flex = "0 0 auto";
+        root.style.height = from + "px";
+        void root.offsetHeight; // commit the start frame before transitioning
+        requestAnimationFrame(() => {
+          root.style.transition = "height 0.42s cubic-bezier(0.2, 0.9, 0.25, 1)";
+          root.style.height = to + "px";
+        });
+
+        const done = (e) => {
+          if (e && e.target !== root) return;
+          root.removeEventListener("transitionend", done);
+          clearTimeout(fallback);
+          // hand sizing back to flex so the card keeps filling its column
+          root.style.transition = "";
+          root.style.height = "";
+          root.style.flex = "";
+          busy = false;
+          window.dispatchEvent(new Event("resize")); // let fit() re-measure
+        };
+        root.addEventListener("transitionend", done);
+        const fallback = setTimeout(done, 600); // transitionend can be skipped
+      }
+
+      expandBtn.addEventListener("click", () => setSize(false));
+      if (collapseBtn) collapseBtn.addEventListener("click", () => setSize(true));
+    }
+
+    // ---- render from state ----
+    LoFi.subscribe((s) => {
+      toggles.forEach((b) => {
+        const compactBtn = !!b.closest(".spw__mini");
+        b.innerHTML = s.playing
+          ? (compactBtn ? MINI_PAUSE : ICON_PAUSE)
+          : (compactBtn ? MINI_PLAY : ICON_PLAY);
+        b.setAttribute("aria-label", s.playing ? "Pause" : "Play");
+      });
+
+      setText("[data-spw-track]", s.track.name);
+      setText("[data-spw-artist]", s.track.artist);
+      setText("[data-spw-elapsed]", LoFi.fmt(s.elapsed));
+      setText("[data-spw-total]", LoFi.fmt(s.track.dur));
+      // the compact card counts down, like the reference
+      setText("[data-spw-remain]", "-" + LoFi.fmt(Math.max(0, s.track.dur - s.elapsed)));
+      const pct = Math.min(100, (s.elapsed / s.track.dur) * 100) + "%";
+      qa("[data-spw-fill]").forEach((e) => (e.style.width = pct));
+      if (statusEl) {
+        // the now-playing bar already names the track, so this line carries what
+        // the rest of the widget can't: there are no audio files behind any of
+        // this — every note is built from oscillators at play time.
+        statusEl.textContent = s.playing
+          ? "Synthesizing live · " + s.track.bpm + " BPM"
+          : "Generative lo-fi — synthesized live in your browser";
+      }
+      root.classList.toggle("spw--playing", s.playing);
+
+      rows.forEach((li, i) => {
+        li.classList.toggle("spw__row--current", i === s.index);
+        li.classList.toggle("spw__row--playing", i === s.index && s.playing);
+      });
+    });
   });
 })();
