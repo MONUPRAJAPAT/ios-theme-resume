@@ -118,18 +118,14 @@
     return total + gap * Math.max(0, count - 1);
   }
 
-  // each column shrinks toward the edge it hugs, so the row stays visually anchored
-  function originFor(col) {
-    if (col.classList.contains("widget-col--left")) return "top left";
-    if (col.classList.contains("widget-col--right")) return "top right";
-    return "top center";
-  }
-
   function fit() {
     // reset first so measurements aren't affected by a prior scale
     cols.forEach((c) => {
       c.style.transform = "none";
+      c.style.transformOrigin = "";
       c.style.height = "";
+      c.style.width = "";
+      c.style.flex = "";
     });
     if (!desktop || isMobile() || !cols.length) return; // phone layout stacks + scrolls instead
 
@@ -137,16 +133,41 @@
     const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     const avail = desktop.clientHeight - padY;
     const need = cols.reduce((m, c) => Math.max(m, colNeed(c)), 0);
-    if (need > avail && need > 0) {
-      const s = Math.max(0.5, avail / need);
-      // pin each column to its natural height first, otherwise it stays stretched to
-      // `avail` and scaling it would reintroduce the empty strip at the bottom
+    if (!(need > avail && need > 0)) return;
+
+    const s = Math.max(0.5, avail / need);
+    const padL = parseFloat(cs.paddingLeft);
+    const padX = padL + parseFloat(cs.paddingRight);
+    const gap = parseFloat(cs.columnGap || cs.gap) || 0;
+    const availW = desktop.clientWidth - padX;
+
+    // Scaling each column in place used to pull them apart, because they shrank
+    // toward different origins — the 16px gutters ballooned. Instead: widen the
+    // flexible middle column so the row still spans the desktop once scaled,
+    // then lay the columns out by hand from a single origin.
+    const mid = desktop.querySelector(".widget-col--mid");
+    if (mid) {
+      let sideW = 0;
       cols.forEach((c) => {
-        c.style.height = need + "px";
-        c.style.transformOrigin = originFor(c);
-        c.style.transform = "scale(" + s + ")";
+        if (c !== mid) sideW += c.getBoundingClientRect().width;
       });
+      const midW = (availW - gap * (cols.length - 1)) / s - sideW;
+      if (midW > 120) {
+        mid.style.flex = "0 0 auto";
+        mid.style.width = midW + "px";
+      }
     }
+
+    // pin each column to its natural height, then translate so the scaled boxes
+    // sit flush against one another with exactly `gap` showing between them
+    let cursor = desktop.getBoundingClientRect().left + padL;
+    cols.forEach((c) => {
+      c.style.height = need + "px";
+      c.style.transformOrigin = "top left";
+      const r = c.getBoundingClientRect(); // untransformed: transform is "none" here
+      c.style.transform = "translateX(" + (cursor - r.left) + "px) scale(" + s + ")";
+      cursor += r.width * s + gap;
+    });
   }
 
   fit();
@@ -1029,6 +1050,9 @@
       highlights: ["HD multi-party video powered by WebRTC", "Screen sharing and in-call chat", "Shareable room links with a waiting room"] },
   ];
 
+  // the Featured Projects widget renders from this same list
+  window.PortfolioProjects = PROJECTS;
+
   // gradient headers for the detail page of imageless projects
   const GROUP_GRAD = {
     ai: "linear-gradient(135deg,#3a2b6e,#7c3aed)",
@@ -1444,6 +1468,7 @@
 
   // class -> label mapping (in dock order)
   const TIPS = {
+    "dock__app--spotify": "Spotify",
     "dock__app--finder": "Projects",
     "dock__app--notes": "About",
     "dock__app--acrobat": "Resume",
@@ -1574,16 +1599,16 @@
   // "tracks" = generative moods (chords are semitone offsets from root).
   // `dur` is the nominal length used by the playlist UI + auto-advance.
   const TRACKS = [
-    { name: "Midnight Study", artist: "Lo-Fi · Generative", bpm: 72, root: 220.0, wave: "sine",
+    { name: "Midnight Study", artist: "Lo-Fi · Generative", album: "Generative Sessions", bpm: 72, root: 220.0, wave: "sine",
       chords: [[0, 3, 7, 10], [-2, 3, 5, 10], [-4, 0, 3, 7], [-5, -2, 2, 5]], rain: false, dur: 204 },
-    { name: "Rainy Focus", artist: "Lo-Fi · Generative", bpm: 66, root: 196.0, wave: "triangle",
+    { name: "Rainy Focus", artist: "Lo-Fi · Generative", album: "Generative Sessions", bpm: 66, root: 196.0, wave: "triangle",
       chords: [[0, 3, 7, 10], [5, 8, 12, 15], [-2, 2, 5, 9], [-4, 0, 3, 7]], rain: true, dur: 222 },
-    { name: "Sunday Coding", artist: "Lo-Fi · Generative", bpm: 78, root: 261.63, wave: "sine",
+    { name: "Sunday Coding", artist: "Lo-Fi · Generative", album: "Generative Sessions", bpm: 78, root: 261.63, wave: "sine",
       chords: [[0, 4, 7, 11], [-3, 2, 5, 9], [-5, 0, 4, 7], [2, 5, 9, 12]], rain: false, dur: 189 },
   ];
 
   const PLAYLIST = {
-    title: "Lo-Fi Coding Session",
+    title: "delulu but dancing",
     owner: "Monu Prajapat",
   };
 
@@ -2138,6 +2163,7 @@
   // scoped to `.dock`: the clones we append below reuse these same classes, so an
   // unscoped selector would start resolving to a previously-cloned icon
   const MAP = {
+    spotify: ".dock .dock__app--spotify",
     finder: ".dock .dock__app--finder",
     notes: ".dock .dock__app--notes",
     acrobat: ".dock .dock__app--acrobat",
@@ -2321,10 +2347,16 @@
   };
 
   document.querySelectorAll(".menubar__item[data-menu]").forEach((item) => {
-    const target = document.querySelector(MENU[item.dataset.menu]);
+    const key = item.dataset.menu;
+    const target = document.querySelector(MENU[key]);
     if (!target) return;
     item.addEventListener("click", (e) => {
       e.preventDefault();
+      // Contact opens the Contacts window; the dock's Mail icon still does mailto
+      if (key === "contact" && window.ContactsApp) {
+        window.ContactsApp.open(item);
+        return;
+      }
       target.click();
     });
   });
@@ -2352,7 +2384,6 @@
   const MINI_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12 2.5 18.4V5.6z"/><path d="M21.5 12 12 18.4V5.6z"/></svg>';
   // replaces the audio-output button from the reference card
   const ICON_EXPAND = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H4v6"/><path d="M14 20h6v-6"/><path d="M4 4l6.5 6.5"/><path d="M20 20l-6.5-6.5"/></svg>';
-  const ICON_COLLAPSE = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h6V4"/><path d="M20 14h-6v6"/><path d="M10 10 3.5 3.5"/><path d="M14 14l6.5 6.5"/></svg>';
 
   const totalSecs = LoFi.TRACKS.reduce((n, t) => n + t.dur, 0);
   const playlistMeta =
@@ -2372,17 +2403,19 @@
     const setText = (sel, txt) => qa(sel).forEach((e) => (e.textContent = txt));
 
     if (metaEl) metaEl.textContent = playlistMeta;
+    setText("[data-spw-title]", LoFi.PLAYLIST.title);
 
     // ---- static chrome (compact card gets the reference's icon set) ----
     qa("[data-spw-prev]").forEach((b) => (b.innerHTML = b.closest(".spw__mini") ? MINI_PREV : ICON_PREV));
     qa("[data-spw-next]").forEach((b) => (b.innerHTML = b.closest(".spw__mini") ? MINI_NEXT : ICON_NEXT));
     const expandBtn = q("[data-spw-expand]");
-    const collapseBtn = q("[data-spw-collapse]");
-    if (expandBtn) expandBtn.innerHTML = ICON_EXPAND;
-    if (collapseBtn) collapseBtn.innerHTML = ICON_COLLAPSE;
+    // only fill an empty trigger — the mobile tile's trigger IS the artwork, and
+    // injecting the icon there would paint over the album art
+    if (expandBtn && !expandBtn.innerHTML.trim()) expandBtn.innerHTML = ICON_EXPAND;
 
     // ---- playlist rows, built from the engine's track list ----
-    LoFi.TRACKS.forEach((t, i) => {
+    // (the desktop widget is compact-only — it has no list to fill)
+    if (listEl) LoFi.TRACKS.forEach((t, i) => {
       const li = document.createElement("li");
       li.className = "spw__row";
       li.dataset.index = String(i);
@@ -2397,7 +2430,7 @@
       li.addEventListener("click", () => LoFi.playTrack(i));
       listEl.appendChild(li);
     });
-    const rows = [...listEl.children];
+    const rows = listEl ? [...listEl.children] : [];
 
     // ---- equaliser bars fed by the shared analyser (one meter per view) ----
     qa("[data-spw-eq]").forEach((eq) => {
@@ -2416,57 +2449,11 @@
     qa("[data-spw-prev]").forEach((b) => b.addEventListener("click", () => LoFi.prev()));
     qa("[data-spw-next]").forEach((b) => b.addEventListener("click", () => LoFi.next()));
 
-    // ---- compact <-> full size, animated ----
-    if (mini && expandBtn) {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      let busy = false;
-
-      function setSize(compact) {
-        if (busy || root.classList.contains("spw--compact") === compact) return;
-        expandBtn.setAttribute("aria-expanded", String(!compact));
-
-        if (reduced) {
-          root.classList.toggle("spw--compact", compact);
-          window.dispatchEvent(new Event("resize"));
-          return;
-        }
-
-        // measure where we are, swap the view, measure where we land, then
-        // animate between the two — the card can't transition to `auto`/flex on
-        // its own, so it is pinned to explicit pixels for the duration
-        const from = root.getBoundingClientRect().height;
-        root.classList.toggle("spw--compact", compact);
-        root.style.transition = "none";
-        root.style.flex = "";
-        root.style.height = "";
-        const to = root.getBoundingClientRect().height;
-
-        busy = true;
-        root.style.flex = "0 0 auto";
-        root.style.height = from + "px";
-        void root.offsetHeight; // commit the start frame before transitioning
-        requestAnimationFrame(() => {
-          root.style.transition = "height 0.42s cubic-bezier(0.2, 0.9, 0.25, 1)";
-          root.style.height = to + "px";
-        });
-
-        const done = (e) => {
-          if (e && e.target !== root) return;
-          root.removeEventListener("transitionend", done);
-          clearTimeout(fallback);
-          // hand sizing back to flex so the card keeps filling its column
-          root.style.transition = "";
-          root.style.height = "";
-          root.style.flex = "";
-          busy = false;
-          window.dispatchEvent(new Event("resize")); // let fit() re-measure
-        };
-        root.addEventListener("transitionend", done);
-        const fallback = setTimeout(done, 600); // transitionend can be skipped
-      }
-
-      expandBtn.addEventListener("click", () => setSize(false));
-      if (collapseBtn) collapseBtn.addEventListener("click", () => setSize(true));
+    // ---- the size toggle opens the full Spotify app window ----
+    if (expandBtn) {
+      expandBtn.addEventListener("click", () => {
+        if (window.SpotifyApp) window.SpotifyApp.open(expandBtn);
+      });
     }
 
     // ---- render from state ----
@@ -2503,4 +2490,512 @@
       });
     });
   });
+})();
+
+/* ===================== SPOTIFY APP WINDOW =====================
+   The compact widget's size toggle opens this: a full Spotify playlist page,
+   laid out from the reference screenshot (art-tinted hero, action bar, track
+   table, player bar). It is another view onto the shared LoFi engine, so it
+   opens already in sync and closing it never interrupts playback. */
+(function () {
+  const screen = document.querySelector(".screen");
+  if (!screen || !window.LoFi) return;
+
+  // traffic-light glyphs (match every other window)
+  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
+
+  const I = {
+    play: '<svg viewBox="0 0 24 24"><path d="M7.5 4.8v14.4L20 12z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24"><rect x="6.4" y="4.8" width="4.2" height="14.4" rx="1.4"/><rect x="13.4" y="4.8" width="4.2" height="14.4" rx="1.4"/></svg>',
+    prev: '<svg viewBox="0 0 24 24"><path d="M18 5.5 9.5 12 18 18.5Z"/><rect x="5.4" y="5.5" width="2.6" height="13" rx="1.1"/></svg>',
+    next: '<svg viewBox="0 0 24 24"><path d="M6 5.5 14.5 12 6 18.5Z"/><rect x="16" y="5.5" width="2.6" height="13" rx="1.1"/></svg>',
+    more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.4 2" stroke-linecap="round"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M7.4 12.4 10.6 15.6 16.8 9.2" fill="none" stroke="#121212" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" fill="currentColor"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></svg>',
+    // the playlist cover, same artwork the widget uses
+    cover:
+      '<svg viewBox="0 0 100 100" aria-hidden="true"><g class="spw__cover-note">' +
+      '<path d="M40 22 L74 14 L74 28 L40 36 Z"/>' +
+      '<rect x="40" y="27" width="4.6" height="46" rx="1.6"/>' +
+      '<rect x="69.4" y="19" width="4.6" height="46" rx="1.6"/>' +
+      '<ellipse cx="33.5" cy="72" rx="9.4" ry="7" transform="rotate(-20 33.5 72)"/>' +
+      '<ellipse cx="62.9" cy="64" rx="9.4" ry="7" transform="rotate(-20 62.9 64)"/>' +
+      "</g></svg>",
+  };
+
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // these tracks are built at play time, so "added" is genuinely this session
+  const today = new Date();
+  const ADDED = today.getDate() + " " + MONTHS[today.getMonth()] + " " + today.getFullYear();
+
+  const totalSecs = LoFi.TRACKS.reduce((n, t) => n + t.dur, 0);
+  const PLAYLIST_META =
+    LoFi.TRACKS.length + " songs, " + Math.round(totalSecs / 60) + " min";
+
+  let win = null;
+
+  function open(originEl) {
+    if (win) return;
+    const sRect = screen.getBoundingClientRect();
+    const r = originEl ? originEl.getBoundingClientRect() : sRect;
+    const ox = r.left + r.width / 2 - sRect.left;
+    const oy = r.top + r.height / 2 - sRect.top;
+
+    const modal = document.createElement("div");
+    modal.className = "winmodal";
+    const backdrop = document.createElement("div");
+    backdrop.className = "winmodal__backdrop";
+    win = document.createElement("div");
+    win.className = "winmodal__window spotwin";
+    win.style.transformOrigin = ox + "px " + oy + "px";
+
+    const rowsHTML = LoFi.TRACKS.map(function (t, i) {
+      return (
+        '<div class="sp__row" data-i="' + i + '" role="button" tabindex="0">' +
+          '<div class="sp__cell sp__cell--num">' +
+            '<span class="sp__num">' + (i + 1) + "</span>" +
+            '<span class="sp__rowplay">' + I.play + "</span>" +
+            '<span class="sp__rowbars"><i></i><i></i><i></i><i></i></span>' +
+          "</div>" +
+          '<div class="sp__cell sp__cell--title">' +
+            '<span class="sp__thumb">' + I.cover + "</span>" +
+            "<span class=\"sp__titlemeta\">" +
+              '<span class="sp__rowname">' + t.name + "</span>" +
+              '<span class="sp__rowartist">' + t.artist + "</span>" +
+            "</span>" +
+          "</div>" +
+          '<div class="sp__cell sp__cell--album">' + t.album + "</div>" +
+          '<div class="sp__cell sp__cell--date">' + ADDED + "</div>" +
+          '<div class="sp__cell sp__cell--dur">' +
+            '<span class="sp__saved">' + I.check + "</span>" +
+            '<span class="sp__durtext">' + LoFi.fmt(t.dur) + "</span>" +
+            '<span class="sp__rowmore">' + I.more + "</span>" +
+          "</div>" +
+        "</div>"
+      );
+    }).join("");
+
+    win.innerHTML =
+      '<div class="winmodal__bar spotwin__bar">' +
+        '<div class="winmodal__lights">' +
+          '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+          '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+          '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
+        "</div>" +
+        '<span class="winmodal__title">Spotify</span>' +
+      "</div>" +
+
+      '<div class="sp">' +
+        '<div class="sp__scroll">' +
+          '<header class="sp__hero">' +
+            '<div class="sp__cover">' + I.cover + "</div>" +
+            '<div class="sp__heroinfo">' +
+              '<span class="sp__kind">Public Playlist</span>' +
+              '<h1 class="sp__title">' + LoFi.PLAYLIST.title + "</h1>" +
+              '<div class="sp__owner">' +
+                '<span class="sp__avatar">' + LoFi.PLAYLIST.owner.charAt(0) + "</span>" +
+                '<span class="sp__ownername">' + LoFi.PLAYLIST.owner + "</span>" +
+                '<span class="sp__dot">•</span>' +
+                '<span class="sp__count">' + PLAYLIST_META + "</span>" +
+              "</div>" +
+            "</div>" +
+          "</header>" +
+
+          '<div class="sp__actions">' +
+            '<button class="sp__bigplay" data-sp-toggle aria-label="Play"></button>' +
+          "</div>" +
+
+          '<div class="sp__table">' +
+            '<div class="sp__head">' +
+              '<div class="sp__cell sp__cell--num">#</div>' +
+              '<div class="sp__cell sp__cell--title">Title</div>' +
+              '<div class="sp__cell sp__cell--album">Album</div>' +
+              '<div class="sp__cell sp__cell--date">Date added</div>' +
+              '<div class="sp__cell sp__cell--dur">' + I.clock + "</div>" +
+            "</div>" +
+            rowsHTML +
+          "</div>" +
+        "</div>" +
+
+        '<footer class="sp__bar">' +
+          '<div class="sp__np">' +
+            '<span class="sp__npart">' + I.cover + "</span>" +
+            '<span class="sp__npmeta">' +
+              '<span class="sp__nptitle" data-sp-track></span>' +
+              '<span class="sp__npartist" data-sp-artist></span>' +
+            "</span>" +
+            '<span class="sp__npsaved">' + I.check + "</span>" +
+          "</div>" +
+          '<div class="sp__center">' +
+            '<div class="sp__transport">' +
+              '<button class="sp__ico sp__ico--lg" data-sp-prev aria-label="Previous">' + I.prev + "</button>" +
+              '<button class="sp__playbtn" data-sp-toggle aria-label="Play"></button>' +
+              '<button class="sp__ico sp__ico--lg" data-sp-next aria-label="Next">' + I.next + "</button>" +
+            "</div>" +
+            '<div class="sp__scrub">' +
+              '<span class="sp__time" data-sp-elapsed>0:00</span>' +
+              '<div class="sp__track"><span class="sp__fill" data-sp-fill></span></div>' +
+              '<span class="sp__time" data-sp-total>0:00</span>' +
+            "</div>" +
+          "</div>" +
+          '<div class="sp__right">' +
+            '<span class="sp__ico sp__ico--static">' + I.volume + "</span>" +
+            '<input class="sp__vol" type="range" min="0" max="100" value="60" aria-label="Volume">' +
+          "</div>" +
+        "</footer>" +
+      "</div>";
+
+    modal.appendChild(backdrop);
+    modal.appendChild(win);
+    screen.appendChild(modal);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => modal.classList.add("winmodal--open"))
+    );
+
+    const rowEls = [...win.querySelectorAll(".sp__row")];
+    const toggles = [...win.querySelectorAll("[data-sp-toggle]")];
+    const vol = win.querySelector(".sp__vol");
+
+    // ---- wiring ----
+    toggles.forEach((b) => b.addEventListener("click", () => LoFi.toggle()));
+    win.querySelector("[data-sp-prev]").addEventListener("click", () => LoFi.prev());
+    win.querySelector("[data-sp-next]").addEventListener("click", () => LoFi.next());
+    rowEls.forEach((el, i) => {
+      el.addEventListener("click", () => LoFi.playTrack(i));
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          LoFi.playTrack(i);
+        }
+      });
+    });
+    vol.addEventListener("input", () => LoFi.setVolume(vol.value / 100));
+
+    // Every row owns its own set of bars riding the shared analyser. Only the
+    // playing row's are visible, so animating all three costs nothing — and it
+    // avoids re-parenting one set between rows, which duplicated them.
+    const meters = rowEls.map((el) => [...el.querySelectorAll(".sp__rowbars i")]);
+    meters.forEach((m) => LoFi.addMeter(m));
+
+    function render(s) {
+      toggles.forEach((b) => {
+        b.innerHTML = s.playing ? I.pause : I.play;
+        b.setAttribute("aria-label", s.playing ? "Pause" : "Play");
+      });
+      win.querySelector("[data-sp-track]").textContent = s.track.name;
+      win.querySelector("[data-sp-artist]").textContent = s.track.artist;
+      win.querySelector("[data-sp-elapsed]").textContent = LoFi.fmt(s.elapsed);
+      win.querySelector("[data-sp-total]").textContent = LoFi.fmt(s.track.dur);
+      win.querySelector("[data-sp-fill]").style.width =
+        Math.min(100, (s.elapsed / s.track.dur) * 100) + "%";
+      win.classList.toggle("sp--playing", s.playing);
+      rowEls.forEach((el, i) => {
+        el.classList.toggle("sp__row--current", i === s.index);
+        el.classList.toggle("sp__row--playing", i === s.index && s.playing);
+      });
+      if (document.activeElement !== vol) vol.value = Math.round(s.volume * 100);
+    }
+    const unsubscribe = LoFi.subscribe(render);
+
+    // ---- window chrome ----
+    function close() {
+      meters.forEach((m) => LoFi.removeMeter(m));
+      unsubscribe();
+      modal.classList.remove("winmodal--open");
+      setTimeout(() => modal.remove(), 330);
+      document.removeEventListener("keydown", onKey);
+      win = null;
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    backdrop.addEventListener("click", close);
+    win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("spotwin--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
+    document.addEventListener("keydown", onKey);
+  }
+
+  const dockIcon = document.querySelector(".dock .dock__app--spotify");
+  if (dockIcon) {
+    dockIcon.style.cursor = "pointer";
+    dockIcon.addEventListener("click", (e) => {
+      e.preventDefault();
+      open(dockIcon);
+    });
+  }
+
+  window.SpotifyApp = { open: open };
+})();
+
+/* ===================== FEATURED PROJECTS WIDGET =====================
+   One featured project shown large, with the rest as thumbnails that swap it.
+   Renders from the same PROJECTS list the Projects window uses. */
+(function () {
+  const widgets = [...document.querySelectorAll("[data-pjw]")];
+  const ALL = window.PortfolioProjects || [];
+  if (!widgets.length || !ALL.length) return;
+
+  const FEATURED = ALL.filter((p) => p.group === "featured");
+  if (!FEATURED.length) return;
+  const REST = ALL.length - FEATURED.length;
+
+  const ICON_GO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M12.5 5.5 19 12l-6.5 6.5"/></svg>';
+  // the reference shows a due date here; ours shows where the project actually lives
+  const ICON_GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.6"/><path d="M3.6 12h16.8"/><path d="M12 3.4c2.1 2.3 3.2 5.4 3.2 8.6s-1.1 6.3-3.2 8.6c-2.1-2.3-3.2-5.4-3.2-8.6S9.9 5.7 12 3.4z"/></svg>';
+
+  const host = (p) => {
+    try { return new URL(p.url).host.replace(/^www\./, ""); } catch (e) { return null; }
+  };
+
+  widgets.forEach((root) => {
+    const q = (sel) => root.querySelector(sel);
+    const thumbsEl = q("[data-pjw-thumbs]");
+    const linkEl = q("[data-pjw-feature]");
+
+    q("[data-pjw-go]").innerHTML = ICON_GO;
+    q("[data-pjw-icon]").innerHTML = ICON_GLOBE;
+
+    // ---- thumbnails: one per featured project, then a chip for the remainder ----
+    FEATURED.forEach((p, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pjw__thumb";
+      b.style.backgroundImage = 'url("' + p.img + '")';
+      b.setAttribute("aria-label", "Feature " + p.title);
+      b.addEventListener("click", () => show(i));
+      thumbsEl.appendChild(b);
+    });
+    if (REST > 0) {
+      const more = document.createElement("button");
+      more.type = "button";
+      more.className = "pjw__plus";
+      more.textContent = "+" + REST;
+      more.setAttribute("aria-label", REST + " more projects");
+      more.addEventListener("click", openAll);
+      thumbsEl.appendChild(more);
+    }
+    const thumbs = [...thumbsEl.querySelectorAll(".pjw__thumb")];
+
+    function show(i) {
+      const p = FEATURED[i];
+      q("[data-pjw-img]").style.backgroundImage = 'url("' + p.img + '")';
+      q("[data-pjw-name]").textContent = p.title;
+      q("[data-pjw-desc]").textContent = p.desc || p.cat;
+      // the column is far taller than the reference card, so the real stack fills
+      // the panel instead of leaving a gap or over-cropping the screenshot
+      const stackEl = q("[data-pjw-stack]");
+      stackEl.innerHTML = "";
+      (p.stack || []).slice(0, 6).forEach((tech) => {
+        const chip = document.createElement("span");
+        chip.className = "pjw__chip";
+        chip.textContent = tech;
+        stackEl.appendChild(chip);
+      });
+      q("[data-pjw-metric]").textContent = host(p) || p.mt;
+      q("[data-pjw-sub]").textContent = [p.badge, p.yr].filter(Boolean).join(" · ");
+      if (p.url) linkEl.href = p.url;
+      else linkEl.removeAttribute("href");
+      thumbs.forEach((t, n) => t.classList.toggle("pjw__thumb--on", n === i));
+    }
+
+    // the "+N" chip goes to the full Projects window
+    function openAll() {
+      const finder = document.querySelector(".dock .dock__app--finder");
+      if (finder) finder.click();
+    }
+
+    show(0);
+  });
+})();
+
+/* ===================== AMBIENT VIDEO CARD =====================
+   Autoplay needs the muted + playsinline combination, and browsers still hand
+   back a rejected promise sometimes — the poster stands in when that happens.
+   Playback is paused while the tab is hidden, and skipped entirely for anyone
+   who asked for reduced motion. */
+(function () {
+  const vid = document.querySelector(".vidw__v");
+  if (!vid) return;
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) return; // the poster frame is enough
+
+  const play = () => {
+    const r = vid.play();
+    if (r && r.catch) r.catch(() => {});
+  };
+
+  play();
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) vid.pause();
+    else play();
+  });
+})();
+
+/* ===================== CONTACTS WINDOW =====================
+   Opened from the "Contact" menu. Every field here already existed elsewhere in
+   this file (the About window's bio and contact rows, the dock's links) — this
+   is a different view of the same facts, not a second copy of the truth. */
+(function () {
+  const screen = document.querySelector(".screen");
+  if (!screen) return;
+
+  const ME = {
+    name: "Monu Prajapat",
+    role: "Sr. Full Stack Engineer",
+    tagline: "Let's build something meaningful.",
+    title: "Full Stack Engineer & Tech Lead",
+    location: "India",
+    experience: "4+ Years",
+    company: "Eminence Technology",
+    focus: "MERN · Node.js · React",
+    email: "monuprajapat6270@gmail.com",
+    phone: "+91-9996105221",
+    linkedin: "https://www.linkedin.com/in/monuprajapat/",
+    github: "https://github.com/MONUPRAJAPAT",
+    resume: "Monu_Resume.pdf",
+  };
+
+  const G_CLOSE = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3.4 3.4 8.6 8.6M8.6 3.4 3.4 8.6"/></svg>';
+  const G_MIN = '<svg class="wl__g" viewBox="0 0 12 12"><path d="M3 6H9"/></svg>';
+  const G_EXPAND = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 3 3 6.4 6.4 3Z"/><path d="M9 9 9 5.6 5.6 9Z"/></svg>';
+  const G_COLLAPSE = '<svg class="wl__g wl__g--fill" viewBox="0 0 12 12"><path d="M3 5.8 5.8 5.8 5.8 3Z"/><path d="M9 6.2 6.2 6.2 6.2 9Z"/></svg>';
+
+  const I_DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+  const I_GITHUB = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.5a10.5 10.5 0 0 0-3.32 20.47c.52.1.71-.23.71-.5v-1.75c-2.9.63-3.52-1.4-3.52-1.4-.48-1.2-1.16-1.53-1.16-1.53-.95-.65.07-.64.07-.64 1.05.08 1.6 1.08 1.6 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.66-1.4-2.31-.26-4.75-1.16-4.75-5.14 0-1.14.41-2.06 1.08-2.79-.11-.27-.47-1.33.1-2.76 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.88-1.07 2.88-1.07.57 1.43.21 2.49.1 2.76.67.73 1.08 1.65 1.08 2.79 0 3.99-2.45 4.87-4.78 5.13.38.33.71.97.71 1.96v2.91c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5z"/></svg>';
+  const I_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6.4A2.4 2.4 0 0 0 4 5.4v6.1A2.5 2.5 0 0 0 6.5 14"/></svg>';
+  const I_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>';
+
+  const card = (label, value, mod) =>
+    '<div class="cw__card' + (mod ? " cw__card--" + mod : "") + '">' +
+      '<span class="cw__label">' + label + "</span>" +
+      '<span class="cw__value">' + value + "</span>" +
+    "</div>";
+
+  const copyCard = (label, value, href, copyText) =>
+    '<div class="cw__card cw__card--wide cw__card--link">' +
+      '<span class="cw__cardmain">' +
+        '<span class="cw__label">' + label + "</span>" +
+        '<a class="cw__link" href="' + href + '">' + value + "</a>" +
+      "</span>" +
+      '<button class="cw__copy" type="button" data-copy="' + copyText + '" ' +
+        'aria-label="Copy ' + label.toLowerCase() + '">' + I_COPY + I_TICK + "</button>" +
+    "</div>";
+
+  let win = null;
+
+  function open(originEl) {
+    if (win) return;
+    const sRect = screen.getBoundingClientRect();
+    const r = originEl ? originEl.getBoundingClientRect() : sRect;
+    const ox = r.left + r.width / 2 - sRect.left;
+    const oy = r.top + r.height / 2 - sRect.top;
+
+    const modal = document.createElement("div");
+    modal.className = "winmodal";
+    const backdrop = document.createElement("div");
+    backdrop.className = "winmodal__backdrop";
+    win = document.createElement("div");
+    win.className = "winmodal__window contactwin";
+    win.style.transformOrigin = ox + "px " + oy + "px";
+
+    const initials = ME.name.split(" ").map((n) => n[0]).join("").slice(0, 2);
+
+    win.innerHTML =
+      '<div class="winmodal__bar contactwin__bar">' +
+        '<div class="winmodal__lights">' +
+          '<button class="wl wl--close" aria-label="Close">' + G_CLOSE + "</button>" +
+          '<button class="wl wl--min" aria-label="Minimize">' + G_MIN + "</button>" +
+          '<button class="wl wl--max" aria-label="Expand">' + G_EXPAND + "</button>" +
+        "</div>" +
+        '<span class="winmodal__title">Contacts</span>' +
+      "</div>" +
+
+      '<div class="cw">' +
+        '<aside class="cw__side">' +
+          '<div class="cw__avatar" aria-hidden="true"><span>' + initials + "</span></div>" +
+          '<h2 class="cw__name">' + ME.name + "</h2>" +
+          '<p class="cw__role">' + ME.role + "</p>" +
+          '<p class="cw__tagline">' + ME.tagline + "</p>" +
+          '<div class="cw__apps">' +
+            '<a class="cw__app cw__app--doc" href="' + ME.resume + '" target="_blank" rel="noopener" aria-label="Resume (PDF)">' + I_DOC + "</a>" +
+            '<a class="cw__app cw__app--li" href="' + ME.linkedin + '" target="_blank" rel="noopener" aria-label="LinkedIn"><span>in</span></a>' +
+            '<a class="cw__app cw__app--gh" href="' + ME.github + '" target="_blank" rel="noopener" aria-label="GitHub">' + I_GITHUB + "</a>" +
+          "</div>" +
+        "</aside>" +
+
+        '<div class="cw__grid">' +
+          card("Current Role", ME.title, "wide") +
+          card("Location", ME.location) +
+          card("Experience", ME.experience) +
+          card("Company", ME.company) +
+          card("Focus", ME.focus) +
+          copyCard("Email", ME.email, "mailto:" + ME.email, ME.email) +
+          copyCard("Phone", ME.phone, "tel:" + ME.phone.replace(/[^+\d]/g, ""), ME.phone) +
+        "</div>" +
+      "</div>";
+
+    modal.appendChild(backdrop);
+    modal.appendChild(win);
+    screen.appendChild(modal);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => modal.classList.add("winmodal--open"))
+    );
+
+    // ---- copy to clipboard, with a fallback for non-secure contexts ----
+    win.querySelectorAll(".cw__copy").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const text = btn.dataset.copy;
+        let ok = true;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (err) {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+          document.body.appendChild(ta);
+          ta.select();
+          try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+          ta.remove();
+        }
+        if (!ok) return;
+        btn.classList.add("cw__copy--done");
+        clearTimeout(btn._t);
+        btn._t = setTimeout(() => btn.classList.remove("cw__copy--done"), 1500);
+      });
+    });
+
+    // ---- window chrome ----
+    function close() {
+      modal.classList.remove("winmodal--open");
+      setTimeout(() => modal.remove(), 330);
+      document.removeEventListener("keydown", onKey);
+      win = null;
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    backdrop.addEventListener("click", close);
+    win.querySelector(".wl--close").addEventListener("click", close);
+    const minBtn = win.querySelector(".wl--min");
+    minBtn.addEventListener("click", close);
+    const maxBtn = win.querySelector(".wl--max");
+    maxBtn.addEventListener("click", () => {
+      const isMax = win.classList.toggle("contactwin--max");
+      maxBtn.innerHTML = isMax ? G_COLLAPSE : G_EXPAND;
+      minBtn.disabled = isMax;
+    });
+    document.addEventListener("keydown", onKey);
+  }
+
+  window.ContactsApp = { open: open };
 })();

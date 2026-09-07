@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monu Prajapat — Full Stack Engineer</title>
-  <link rel="stylesheet" href="styles.css?v=113" />
+  <link rel="stylesheet" href="styles.css?v=137" />
 </head>
 <body>
  <div class="screen">
@@ -22,15 +22,6 @@
       <button class="menubar__item" type="button" data-menu="contact">Contact</button>
     </nav>
     <div class="menubar__right">
-      <!-- Battery -->
-      <span class="menubar__icon menubar__battery" aria-label="Battery 100 percent">
-        <span class="menubar__pct">100%</span>
-        <svg class="menubar__glyph menubar__glyph--battery" viewBox="0 0 30 14" aria-hidden="true">
-          <rect x="1" y="1.5" width="24" height="11" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1.2" />
-          <path d="M27 5v4c1.1-.3 1.8-1 1.8-2s-.7-1.7-1.8-2z" fill="currentColor" stroke="none" />
-          <rect x="2.8" y="3.3" width="20.4" height="7.4" rx="1.6" ry="1.6" fill="currentColor" stroke="none" />
-        </svg>
-      </span>
       <span class="menubar__clock">Wed 25 Mar&nbsp;&nbsp;11:33 PM</span>
     </div>
   </header>
@@ -128,38 +119,36 @@
     <!-- MIDDLE WIDGET COLUMN -->
     <section class="widget-col widget-col--mid">
       <!-- Featured Projects (full height) -->
-      <div class="widget widget--lg widget--projects">
-        <div class="pjw__header">
-          <svg class="pjw__icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z" />
-            <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" />
-          </svg>
-          <span class="pjw__title">Featured Projects</span>
+      <div class="widget widget--lg widget--projects pjw" data-pjw>
+        <div class="pjw__top">
+          <svg class="pjw__ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="7.6" height="7.6" rx="2.2" /><rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2" /><rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2" /><rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2" /></svg>
+          <span class="pjw__h">All Projects</span>
         </div>
-        <div class="pjw__list">
-          <a class="pjw__card" href="https://trugamer.com/" target="_blank" rel="noopener" style="--bg: url('proj-trugamer.jpg') center / cover">
-            <span class="pjw__overlay">
-              <span class="pjw__name">TruGamer</span>
-              <span class="pjw__cat">Unified Gaming Platform</span>
+
+        <a class="pjw__feature" data-pjw-feature target="_blank" rel="noopener">
+          <span class="pjw__fthumb" data-pjw-img aria-hidden="true"></span>
+          <span class="pjw__finfo">
+            <span class="pjw__flabel">Featured Project</span>
+            <span class="pjw__fname" data-pjw-name></span>
+            <span class="pjw__fstack" data-pjw-stack></span>
+            <span class="pjw__fdesc" data-pjw-desc></span>
+            <span class="pjw__frow">
+              <span class="pjw__fmeta">
+                <span class="pjw__fmeta-ic" data-pjw-icon aria-hidden="true"></span>
+                <span class="pjw__fmeta-txt">
+                  <span class="pjw__fmeta-a" data-pjw-metric></span>
+                  <span class="pjw__fmeta-b" data-pjw-sub></span>
+                </span>
+              </span>
+              <span class="pjw__fgo" data-pjw-go aria-hidden="true"></span>
             </span>
-          </a>
-          <a class="pjw__card" href="https://jigawatt.solar/" target="_blank" rel="noopener" style="--bg: url('proj-jigawatt.jpg') center / cover">
-            <span class="pjw__overlay">
-              <span class="pjw__name">Jigawatt</span>
-              <span class="pjw__cat">Solar Design &amp; Analytics Platform</span>
-            </span>
-          </a>
-          <a class="pjw__card" href="https://icm.in/" target="_blank" rel="noopener" style="--bg: url('proj-icm.jpg') center / cover">
-            <span class="pjw__overlay">
-              <span class="pjw__name">ICM</span>
-              <span class="pjw__cat">Intelligent Cost Manager</span>
-            </span>
-          </a>
+          </span>
+        </a>
+
+        <div class="pjw__foot">
+          <div class="pjw__thumbs" data-pjw-thumbs></div>
+          <button class="pjw__viewall" type="button">View all projects</button>
         </div>
-        <button class="pjw__viewall" type="button">
-          View All Projects
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-        </button>
       </div>
     </section>
 
@@ -198,66 +187,16 @@
             <button class="spw__mini-btn spw__mini-btn--play" type="button" data-spw-toggle aria-label="Play"></button>
             <button class="spw__mini-btn" type="button" data-spw-next aria-label="Next"></button>
             <button class="spw__mini-btn spw__mini-expand" type="button" data-spw-expand
-                    aria-label="Show full player" aria-expanded="false"></button>
+                    aria-label="Open Spotify" aria-haspopup="dialog"></button>
           </div>
         </div>
+      </div>
 
-        <div class="spw__head">
-          <svg class="spw__logo" viewBox="0 0 496 512" aria-hidden="true">
-            <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
-          </svg>
-          <span class="spw__brand">Spotify</span>
-          <button class="spw__collapse" type="button" data-spw-collapse
-                  aria-label="Show compact player"></button>
-        </div>
-
-        <!-- big square cover: flexes to absorb the column's spare height -->
-        <div class="spw__coverwrap">
-          <div class="spw__cover" aria-hidden="true">
-            <svg viewBox="0 0 100 100">
-            <g class="spw__cover-note">
-              <path d="M40 22 L74 14 L74 28 L40 36 Z" />
-              <rect x="40" y="27" width="4.6" height="46" rx="1.6" />
-              <rect x="69.4" y="19" width="4.6" height="46" rx="1.6" />
-              <ellipse cx="33.5" cy="72" rx="9.4" ry="7" transform="rotate(-20 33.5 72)" />
-              <ellipse cx="62.9" cy="64" rx="9.4" ry="7" transform="rotate(-20 62.9 64)" />
-            </g>
-          </svg>
-          </div>
-        </div>
-
-        <div class="spw__heroinfo">
-          <span class="spw__kind">Playlist</span>
-          <span class="spw__plname" data-spw-title>Lo-Fi Coding Session</span>
-          <span class="spw__plmeta" data-spw-meta></span>
-        </div>
-
-        <div class="spw__actions">
-          <span class="spw__nowlabel" data-spw-status>Generative lo-fi — synthesized live in your browser</span>
-          <button class="spw__bigplay" type="button" data-spw-toggle aria-label="Play"></button>
-        </div>
-
-        <ol class="spw__list" data-spw-list></ol>
-
-        <div class="spw__now">
-          <div class="spw__nowtop">
-            <div class="spw__nowmeta">
-              <span class="spw__nowtitle" data-spw-track></span>
-              <span class="spw__nowartist" data-spw-artist></span>
-            </div>
-            <div class="spw__eq" data-spw-eq aria-hidden="true"></div>
-          </div>
-          <div class="spw__bar">
-            <span class="spw__elapsed" data-spw-elapsed>0:00</span>
-            <div class="spw__track"><span class="spw__fill" data-spw-fill></span></div>
-            <span class="spw__total" data-spw-total>0:00</span>
-          </div>
-          <div class="spw__ctrls">
-            <button class="spw__btn" type="button" data-spw-prev aria-label="Previous"></button>
-            <button class="spw__btn spw__btn--play" type="button" data-spw-toggle aria-label="Play"></button>
-            <button class="spw__btn" type="button" data-spw-next aria-label="Next"></button>
-          </div>
-        </div>
+      <!-- Ambient clip. Portrait 9:16 source, cropped by object-fit so it never
+           stretches, and it fills whatever height the column has left. -->
+      <div class="widget widget--video vidw">
+        <video class="vidw__v" src="carvideo.mp4" poster="carvideo-poster.jpg"
+               muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
       </div>
     </section>
   </main>
@@ -290,7 +229,7 @@
           <button class="ios__app" data-app="finder" aria-label="Projects"><span class="ios__app-ic"></span></button>
           <button class="ios__app" data-app="notes" aria-label="About Me"><span class="ios__app-ic"></span></button>
           <button class="ios__app" data-app="acrobat" aria-label="Resume"><span class="ios__app-ic"></span></button>
-          <span class="ios__app ios__app--empty"></span>
+          <button class="ios__app" data-app="spotify" aria-label="Spotify"><span class="ios__app-ic"></span></button>
         </div>
         <div class="ios__folder-label">Portfolio</div>
       </div>
@@ -333,7 +272,7 @@
       </ol>
     </div>
 
-    <!-- Games + Skills -->
+    <!-- Games + Spotify: both sized like an app folder card -->
     <div class="ios__row">
       <div class="ios__folder">
         <div class="ios__folder-inner">
@@ -344,101 +283,89 @@
         </div>
         <div class="ios__folder-label">Games</div>
       </div>
-      <div class="ios__widget ios__skills">
-        <div class="ios__skills-title">Core Stack</div>
-        <div class="ios__chips">
-          <span>React</span><span>Node.js</span><span>Next.js</span><span>TypeScript</span><span>AWS</span><span>MongoDB</span>
+
+      <!-- Spotify tile — same footprint as the folder card beside it -->
+      <div class="widget widget--spotify spw spw--tile" data-spw>
+        <div class="spw__tile">
+          <div class="spw__tile-head">
+            <!-- tapping the artwork opens the Spotify app, like any iOS widget -->
+            <button class="spw__tile-art" type="button" data-spw-expand aria-label="Open Spotify">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <g class="spw__cover-note">
+                  <path d="M40 22 L74 14 L74 28 L40 36 Z" />
+                  <rect x="40" y="27" width="4.6" height="46" rx="1.6" />
+                  <rect x="69.4" y="19" width="4.6" height="46" rx="1.6" />
+                  <ellipse cx="33.5" cy="72" rx="9.4" ry="7" transform="rotate(-20 33.5 72)" />
+                  <ellipse cx="62.9" cy="64" rx="9.4" ry="7" transform="rotate(-20 62.9 64)" />
+                </g>
+              </svg>
+            </button>
+            <!-- the brand mark knocks its arcs out, so the card shows through -->
+            <span class="spw__tile-badge" aria-hidden="true">
+              <svg viewBox="0 0 496 512"><path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" /></svg>
+            </span>
+          </div>
+          <div class="spw__tile-foot">
+            <span class="spw__tile-meta">
+              <span class="spw__tile-title" data-spw-track></span>
+              <span class="spw__tile-artist" data-spw-artist></span>
+            </span>
+            <button class="spw__tile-play" type="button" data-spw-toggle aria-label="Play"></button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Spotify player (same engine + playlist as the desktop widget) -->
-    <div class="widget widget--spotify spw spw--ios ios__widget" data-spw>
-      <div class="spw__head">
-        <svg class="spw__logo" viewBox="0 0 496 512" aria-hidden="true">
-          <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
-        </svg>
-        <span class="spw__brand">Spotify</span>
-      </div>
-
-      <!-- big square cover: flexes to absorb the column's spare height -->
-      <div class="spw__coverwrap">
-        <div class="spw__cover" aria-hidden="true">
-          <svg viewBox="0 0 100 100">
-          <g class="spw__cover-note">
-            <path d="M40 22 L74 14 L74 28 L40 36 Z" />
-            <rect x="40" y="27" width="4.6" height="46" rx="1.6" />
-            <rect x="69.4" y="19" width="4.6" height="46" rx="1.6" />
-            <ellipse cx="33.5" cy="72" rx="9.4" ry="7" transform="rotate(-20 33.5 72)" />
-            <ellipse cx="62.9" cy="64" rx="9.4" ry="7" transform="rotate(-20 62.9 64)" />
-          </g>
-        </svg>
-        </div>
-      </div>
-
-      <div class="spw__heroinfo">
-        <span class="spw__kind">Playlist</span>
-        <span class="spw__plname" data-spw-title>Lo-Fi Coding Session</span>
-        <span class="spw__plmeta" data-spw-meta></span>
-      </div>
-
-      <div class="spw__actions">
-        <span class="spw__nowlabel" data-spw-status>Generative lo-fi — synthesized live in your browser</span>
-        <button class="spw__bigplay" type="button" data-spw-toggle aria-label="Play"></button>
-      </div>
-
-      <ol class="spw__list" data-spw-list></ol>
-
-      <div class="spw__now">
-        <div class="spw__nowtop">
-          <div class="spw__nowmeta">
-            <span class="spw__nowtitle" data-spw-track></span>
-            <span class="spw__nowartist" data-spw-artist></span>
-          </div>
-          <div class="spw__eq" data-spw-eq aria-hidden="true"></div>
-        </div>
-        <div class="spw__bar">
-          <span class="spw__elapsed" data-spw-elapsed>0:00</span>
-          <div class="spw__track"><span class="spw__fill" data-spw-fill></span></div>
-          <span class="spw__total" data-spw-total>0:00</span>
-        </div>
-        <div class="spw__ctrls">
-          <button class="spw__btn" type="button" data-spw-prev aria-label="Previous"></button>
-          <button class="spw__btn spw__btn--play" type="button" data-spw-toggle aria-label="Play"></button>
-          <button class="spw__btn" type="button" data-spw-next aria-label="Next"></button>
-        </div>
+    <!-- Core Stack now runs full width, where the chips have room -->
+    <div class="ios__widget ios__skills ios__skills--wide">
+      <div class="ios__skills-title">Core Stack</div>
+      <div class="ios__chips">
+        <span>React</span><span>Node.js</span><span>Next.js</span><span>TypeScript</span><span>AWS</span><span>MongoDB</span>
       </div>
     </div>
 
     <!-- Featured Projects -->
-    <div class="widget widget--lg widget--projects ios__widget">
-      <div class="pjw__header">
-        <svg class="pjw__icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z" />
-          <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" />
-        </svg>
-        <span class="pjw__title">Featured Projects</span>
+    <div class="widget widget--lg widget--projects pjw" data-pjw>
+      <div class="pjw__top">
+        <svg class="pjw__ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="7.6" height="7.6" rx="2.2" /><rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2" /><rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2" /><rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2" /></svg>
+        <span class="pjw__h">All Projects</span>
       </div>
-      <div class="pjw__list">
-        <a class="pjw__card" href="https://trugamer.com/" target="_blank" rel="noopener" style="--bg: url('proj-trugamer.jpg') center / cover">
-          <span class="pjw__overlay"><span class="pjw__name">TruGamer</span><span class="pjw__cat">Unified Gaming Platform</span></span>
-        </a>
-        <a class="pjw__card" href="https://jigawatt.solar/" target="_blank" rel="noopener" style="--bg: url('proj-jigawatt.jpg') center / cover">
-          <span class="pjw__overlay"><span class="pjw__name">Jigawatt</span><span class="pjw__cat">Solar Design &amp; Analytics Platform</span></span>
-        </a>
-        <a class="pjw__card" href="https://icm.in/" target="_blank" rel="noopener" style="--bg: url('proj-icm.jpg') center / cover">
-          <span class="pjw__overlay"><span class="pjw__name">ICM</span><span class="pjw__cat">Intelligent Cost Manager</span></span>
-        </a>
+
+      <a class="pjw__feature" data-pjw-feature target="_blank" rel="noopener">
+        <span class="pjw__fthumb" data-pjw-img aria-hidden="true"></span>
+        <span class="pjw__finfo">
+          <span class="pjw__flabel">Featured Project</span>
+          <span class="pjw__fname" data-pjw-name></span>
+          <span class="pjw__fstack" data-pjw-stack></span>
+          <span class="pjw__fdesc" data-pjw-desc></span>
+          <span class="pjw__frow">
+            <span class="pjw__fmeta">
+              <span class="pjw__fmeta-ic" data-pjw-icon aria-hidden="true"></span>
+              <span class="pjw__fmeta-txt">
+                <span class="pjw__fmeta-a" data-pjw-metric></span>
+                <span class="pjw__fmeta-b" data-pjw-sub></span>
+              </span>
+            </span>
+            <span class="pjw__fgo" data-pjw-go aria-hidden="true"></span>
+          </span>
+        </span>
+      </a>
+
+      <div class="pjw__foot">
+        <div class="pjw__thumbs" data-pjw-thumbs></div>
+        <button class="pjw__viewall" type="button">View all projects</button>
       </div>
-      <button class="pjw__viewall" type="button">
-        View All Projects
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-      </button>
     </div>
   </div>
 
   <!-- ===================== DOCK ===================== -->
   <footer class="dock">
+    <!-- Spotify (opens the playlist app window) -->
+    <a class="dock__app dock__app--spotify" href="#" aria-label="Spotify">
+      <svg viewBox="0 0 496 512" aria-hidden="true">
+        <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
+      </svg>
+    </a>
     <!-- Finder -->
     <a class="dock__app dock__app--finder" href="#" aria-label="Finder">
       <svg class="finder" viewBox="0 0 100 100" aria-hidden="true">
@@ -547,6 +474,6 @@
 
  </div>
 
-  <script src="script.js?v=56"></script>
+  <script src="script.js?v=70"></script>
 </body>
 </html>
