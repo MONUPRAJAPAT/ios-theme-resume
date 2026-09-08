@@ -6287,7 +6287,7 @@ button.menubar__item:focus-visible {
   }
   .lock__foot {
     gap: 16px;
-    padding-bottom: 16vh;
+    padding-bottom: 9vh;
   }
   .lock__btn {
     width: 60px;
@@ -6326,29 +6326,16 @@ button.menubar__item:focus-visible {
    band at its own aspect shows the whole shot, with a blurred still filling the
    rest so the screen is never bare. */
 @media (max-width: 720px) {
+  /* full-bleed on the phone: the frame fills the screen edge to edge, cropped
+     by object-fit rather than letterboxed into a band */
   .lock__video {
-    /* Full height would crop ~74% of this landscape frame away, which is what
-       reads as stretched. A tall centred band keeps it filling the width while
-       showing far more of the shot — roughly 40% of the frame instead of 26%. */
-    top: 50%;
-    bottom: auto;
-    height: 72%;
-    transform: translateY(-50%);
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    transform: none;
     object-fit: cover;
-    /* dissolve the band's edges into the blurred backdrop instead of cutting a
-       hard horizontal seam across the screen */
-    -webkit-mask-image: linear-gradient(
-      180deg, transparent 0, #000 12%, #000 84%, transparent 100%);
-    mask-image: linear-gradient(
-      180deg, transparent 0, #000 12%, #000 84%, transparent 100%);
-  }
-  .lock::before {
-    content: "";
-    position: absolute;
-    inset: -8%;
-    background: url("lockscreen-poster.jpg") center / cover no-repeat;
-    filter: blur(34px) saturate(120%) brightness(0.55);
-    transform: scale(1.1);
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 
