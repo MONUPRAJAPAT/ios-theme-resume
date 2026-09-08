@@ -3,10 +3,10 @@
    fixed layers sit behind the desktop (z-index -1, same as the old video
    wallpaper) and swap opacity, so a change never snaps or flashes. */
 (function () {
+  // bg is each image's own average colour, so the layer matches while it loads
   const WALLPAPERS = [
-    { id: "bigsur", name: "Big Sur", img: "macos-wallpaper.jpg", bg: "#1c3a52" },
-    { id: "monterey", name: "Monterey", img: "wp-monterey.jpg", bg: "#3a2a5a" },
-    { id: "sky", name: "Sky", img: "wp-radial.jpg", bg: "#4a90d9" },
+    { id: "bg11", name: "Wallpaper 1", img: "backgound11.jpg", bg: "#211d25" },
+    { id: "bg12", name: "Wallpaper 2", img: "backgound12.png", bg: "#181818" },
   ];
   const EVERY_MS = 30000;
 
@@ -785,7 +785,9 @@
         '<header class="nw__toolbar">' +
           '<div class="nw__title"><div class="nw__title-main">All on My Mac</div><div class="nw__title-sub">8 notes</div></div>' +
           '<button class="nw__circ" aria-label="Share">' + ICON.share + "</button>" +
-          '<div class="nw__search">' + ICON.search + "<span>Search</span></div>" +
+          '<div class="nw__search">' + ICON.search +
+            '<input class="nw__search-in" type="search" placeholder="Search" aria-label="Search notes">' +
+          "</div>" +
         "</header>" +
         '<div class="nw__content"></div>' +
       "</section>";
@@ -875,6 +877,56 @@
     }
     folders.forEach((f) => f.addEventListener("click", () => selectTab(f)));
     selectTab(folders[0]);
+
+    // ---- search: filter the folder list by name *and* note text ----
+    const searchIn = win.querySelector(".nw__search-in");
+    const strip = (html) => {
+      const d = document.createElement("div");
+      d.innerHTML = html;
+      return (d.textContent || "").toLowerCase();
+    };
+    // built once — the note bodies never change while the window is open
+    const noteText = {};
+    TABS.forEach((n) => (noteText[n] = (n + " " + strip(CONTENT[n] || "")).toLowerCase()));
+
+    function runSearch() {
+      const q = searchIn.value.trim().toLowerCase();
+      const words = q.split(/\s+/).filter(Boolean);
+      let firstHit = null;
+      let hits = 0;
+      folders.forEach((f) => {
+        const name = f.querySelector(".nw__fname").textContent;
+        const hit = !words.length || words.every((w) => noteText[name].indexOf(w) !== -1);
+        f.style.display = hit ? "" : "none";
+        if (hit) {
+          hits++;
+          if (!firstHit) firstHit = f;
+        }
+      });
+      if (!words.length) {
+        titleSub.textContent = "";
+        return;
+      }
+      // if what you were reading got filtered out, jump to the first match
+      const active = [...folders].find((f) => f.classList.contains("nw__folder--active"));
+      if (firstHit && (!active || active.style.display === "none")) selectTab(firstHit);
+      // after selectTab, which clears the subtitle itself
+      titleSub.textContent = hits + (hits === 1 ? " note" : " notes");
+      if (!hits) {
+        contentEl.innerHTML =
+          '<div class="nw__doc"><p class="nw__empty">No notes match &ldquo;' +
+          searchIn.value.replace(/[<>&]/g, "") + "&rdquo;</p></div>";
+      }
+    }
+
+    searchIn.addEventListener("input", runSearch);
+    searchIn.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && searchIn.value) {
+        e.stopPropagation(); // clear the box before the window will close
+        searchIn.value = "";
+        runSearch();
+      }
+    });
   }
 
   widget.style.cursor = "pointer";
@@ -1164,7 +1216,9 @@
           '<div class="fw__titles"><div class="fw__title">Recents</div>' +
             '<div class="fw__subtitle">3 items</div></div>' +
           '<button class="nw__circ" aria-label="Share">' + T.share + "</button>" +
-          '<div class="nw__search">' + T.search + "<span>Search</span></div>" +
+          '<div class="nw__search">' + T.search +
+            '<input class="nw__search-in" type="search" placeholder="Search" aria-label="Search projects">' +
+          "</div>" +
         "</header>" +
         '<div class="fw__grid fw__grid--projects">' +
           PROJECTS.map(card).join("") +
@@ -1250,14 +1304,30 @@
     const subEl = win.querySelector(".fw__subtitle");
     const footEl = win.querySelector(".fw__footer");
     const navItems = [...win.querySelectorAll(".fw__item[data-group]")];
-    const state = { group: "all", label: "Recents", list: PROJECTS };
+    const state = { group: "all", label: "Recents", list: PROJECTS, query: "" };
+
+    // everything worth typing about a project: name, category, blurb, stack, tags
+    function haystack(p) {
+      return [p.title, p.cat, p.desc, p.yr, p.badge, p.mt,
+        (p.stack || []).join(" "),
+        (p.tags || []).map((t) => t[0]).join(" ")].join(" ").toLowerCase();
+    }
+    function matches(p, q) {
+      // every word must appear somewhere, so "node solar" narrows rather than widens
+      return q.split(/\s+/).filter(Boolean).every((w) => haystack(p).indexOf(w) !== -1);
+    }
 
     function renderGroup(group, label) {
       state.group = group;
       state.label = label;
-      state.list = group === "all" ? PROJECTS : PROJECTS.filter((p) => p.group === group);
-      grid.innerHTML = state.list.map((p, i) => card(p, i)).join("");
-      titleEl.textContent = label;
+      const inGroup = group === "all" ? PROJECTS : PROJECTS.filter((p) => p.group === group);
+      const q = state.query.trim().toLowerCase();
+      state.list = q ? inGroup.filter((p) => matches(p, q)) : inGroup;
+      grid.innerHTML = state.list.length
+        ? state.list.map((p, i) => card(p, i)).join("")
+        : '<div class="fw__empty">No projects match &ldquo;' +
+          state.query.replace(/[<>&]/g, "") + '&rdquo;</div>';
+      titleEl.textContent = q ? 'Search: "' + state.query + '"' : label;
       const n = state.list.length;
       const count = n + (n === 1 ? " item" : " items");
       subEl.textContent = count;
@@ -1289,6 +1359,22 @@
       })
     );
     backBtn.addEventListener("click", () => renderGroup(state.group, state.label));
+
+    // ---- search ----
+    const searchIn = win.querySelector(".nw__search-in");
+    searchIn.addEventListener("input", () => {
+      state.query = searchIn.value;
+      renderGroup(state.group, state.label);
+    });
+    // Escape clears the box first, and only closes the window once it is empty
+    searchIn.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && searchIn.value) {
+        e.stopPropagation();
+        searchIn.value = "";
+        state.query = "";
+        renderGroup(state.group, state.label);
+      }
+    });
 
     // ⋯ → small menu ("View Details" / "Open Live Site")
     let menuEl = null;
@@ -2998,4 +3084,143 @@
   }
 
   window.ContactsApp = { open: open };
+})();
+
+/* ===================== LOCK SCREEN =====================
+   Shown over everything on load. The padlock unlocks it: the shackle springs
+   open, then the whole screen dissolves upward and the desktop is revealed. */
+(function () {
+  const lock = document.getElementById("lock");
+  if (!lock) return;
+
+  const btn = lock.querySelector(".lock__btn");
+  const vid = lock.querySelector(".lock__video");
+  const dateEl = lock.querySelector(".lock__date");
+  const clockEl = lock.querySelector(".lock__clock");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
+  function tick() {
+    const n = new Date();
+    let h = n.getHours() % 12 || 12;
+    dateEl.textContent = DAYS[n.getDay()] + ", " + MONTHS[n.getMonth()] + " " + n.getDate();
+    clockEl.textContent = h + ":" + String(n.getMinutes()).padStart(2, "0");
+  }
+  tick();
+  let clockTimer = setInterval(tick, 1000);
+
+  // ---- playback: skip the first 8 seconds, every time round ----
+  const START_AT = 9.5;
+
+  function toStart() {
+    // seeking before metadata lands throws, so only do it once we know the length
+    if (!vid.duration || isNaN(vid.duration)) return;
+    if (vid.duration > START_AT) vid.currentTime = START_AT;
+  }
+  if (vid) {
+    vid.addEventListener("loadedmetadata", toStart);
+    toStart(); // metadata may already be there from cache
+    // looping by hand so it returns to the 8s mark instead of the very start
+    vid.addEventListener("ended", () => {
+      toStart();
+      const r = vid.play();
+      if (r && r.catch) r.catch(() => {});
+    });
+  }
+
+  // ---- audio ----
+  // Tries to start at half volume. Browsers refuse audio until the page has had
+  // a real user gesture (a scripted click does not count — isTrusted is false),
+  // so when that is refused it falls back to a muted play and the speaker button
+  // is the way in. The button is the only dependable path on a first visit.
+  const sound = lock.querySelector(".lock__sound");
+
+  function setSoundUI(on) {
+    lock.classList.toggle("lock--sound", on);
+    sound.setAttribute("aria-pressed", String(on));
+    sound.setAttribute("aria-label", on ? "Turn sound off" : "Turn sound on");
+  }
+  function soundOn() {
+    if (!vid) return;
+    vid.muted = false;
+    vid.volume = 0.5;
+    const r = vid.play();
+    if (r && r.catch) r.catch(() => {});
+    setSoundUI(true);
+  }
+
+  if (!reduced && vid) {
+    vid.volume = 0.5;
+    vid.muted = false;
+    const withSound = vid.play();
+    if (withSound && withSound.catch) {
+      withSound.then(() => setSoundUI(true)).catch(() => {
+        vid.muted = true;
+        setSoundUI(false);
+        const muted = vid.play();
+        if (muted && muted.catch) muted.catch(() => {}); // poster stands in
+      });
+    } else {
+      setSoundUI(true);
+    }
+  }
+
+  sound.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!vid) return;
+    if (vid.muted) soundOn();
+    else { vid.muted = true; setSoundUI(false); }
+  });
+
+  let unlocked = false;
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    if (vid) vid.muted = true; // audio cuts the moment you commit, not at the end
+    lock.classList.add("lock--open"); // shackle opens first
+
+    const leave = () => {
+      lock.classList.add("lock--gone");
+      const done = () => {
+        lock.classList.add("lock--hidden");
+        lock.setAttribute("aria-hidden", "true");
+        clearInterval(clockTimer);
+        if (vid) {
+          vid.muted = true; // silence before anything else
+          vid.pause();      // and nothing decoding behind the desktop
+        }
+        document.removeEventListener("keydown", onKey);
+        // hand focus to the desktop so keyboard users carry on from the top
+        const first = document.querySelector(".menubar__item[data-menu]");
+        if (first) first.focus({ preventScroll: true });
+        // widgets that size themselves were laid out behind an overlay — re-measure
+        window.dispatchEvent(new Event("resize"));
+      };
+      lock.addEventListener("transitionend", function te(e) {
+        if (e.target !== lock || e.propertyName !== "opacity") return;
+        lock.removeEventListener("transitionend", te);
+        done();
+      });
+      setTimeout(done, 900); // transitionend can be skipped; never strand the overlay
+    };
+
+    if (reduced) leave();
+    else setTimeout(leave, 260);
+  }
+
+  btn.addEventListener("click", unlock);
+  function onKey(e) {
+    // Enter/Escape unlock too, matching how a real lock screen accepts a keypress
+    if (e.key === "Enter" || e.key === "Escape") {
+      if (e.target === sound) return; // let the speaker handle its own keys
+      unlock();
+    }
+  }
+  document.addEventListener("keydown", onKey);
+
+  // focus the padlock so it can be triggered straight from the keyboard
+  requestAnimationFrame(() => btn.focus({ preventScroll: true }));
 })();

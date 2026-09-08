@@ -4,9 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monu Prajapat — Full Stack Engineer</title>
-  <link rel="stylesheet" href="styles.css?v=137" />
+  <link rel="stylesheet" href="styles.css?v=168" />
 </head>
 <body>
+  <!-- ===================== LOCK SCREEN ===================== -->
+  <!-- Sits above everything until the padlock is clicked. Same markup drives the
+       macOS and iPhone treatments; the CSS decides which one you get. -->
+  <div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Locked">
+    <video class="lock__video" src="lockscreen2.mp4" poster="lockscreen-poster.jpg"
+           playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+    <div class="lock__scrim" aria-hidden="true"></div>
+
+    <button class="lock__sound" type="button" aria-label="Turn sound on" aria-pressed="false">
+      <svg class="lock__sic lock__sic--on" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" />
+        <path class="lock__wave" d="M15.4 9.2a4 4 0 0 1 0 5.6" />
+        <path class="lock__wave" d="M18 6.6a7.6 7.6 0 0 1 0 10.8" />
+      </svg>
+      <svg class="lock__sic lock__sic--off" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" />
+        <path class="lock__wave" d="M16 10l4.5 4.5M20.5 10 16 14.5" />
+      </svg>
+    </button>
+
+    <div class="lock__inner">
+      <div class="lock__head">
+        <span class="lock__date"></span>
+        <span class="lock__clock"></span>
+      </div>
+
+      <div class="lock__foot">
+        <button class="lock__btn" type="button" aria-label="Click to access Monu's Portfolio">
+          <svg class="lock__ic lock__ic--shut" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4.5" y="10.5" width="15" height="10.5" rx="3.2" />
+            <path d="M8.2 10.5V7.6a3.8 3.8 0 0 1 7.6 0v2.9" />
+          </svg>
+          <svg class="lock__ic lock__ic--open" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4.5" y="10.5" width="15" height="10.5" rx="3.2" />
+            <path d="M8.2 10.5V7.6a3.8 3.8 0 0 1 7.3-1.3" />
+          </svg>
+        </button>
+        <span class="lock__hint">Click to access Monu's Portfolio</span>
+      </div>
+    </div>
+  </div>
+
  <div class="screen">
   <!-- ===================== MENU BAR ===================== -->
   <header class="menubar">
@@ -474,6 +516,6 @@
 
  </div>
 
-  <script src="script.js?v=70"></script>
+  <script src="script.js?v=85"></script>
 </body>
 </html>

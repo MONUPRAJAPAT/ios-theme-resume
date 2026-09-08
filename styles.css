@@ -25,8 +25,9 @@ body {
   min-height: 100vh;
   color: #fff;
   overflow: hidden;
-  /* macOS Big Sur (mountains & coast) wallpaper — full-res */
-  background: #1c3a52 url("macos-wallpaper.jpg?v=4") center / cover no-repeat fixed;
+  /* first frame, before the rotation module takes over with its own layers;
+     the colour is this image's average so there is no flash while it decodes */
+  background: #211d25 url("backgound11.jpg") center / cover no-repeat fixed;
 }
 
 /* Full-viewport scene — columns hug the screen edges (no letterbox padding). */
@@ -815,8 +816,8 @@ button.menubar__item:focus-visible {
   gap: 8px;
 }
 .wl {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 0;
   padding: 0;
@@ -836,8 +837,8 @@ button.menubar__item:focus-visible {
 }
 /* glyphs inside the traffic lights */
 .wl__g {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   display: block;
   opacity: 0; /* hidden until this specific dot is hovered */
   transition: opacity 0.12s ease;
@@ -869,7 +870,9 @@ button.menubar__item:focus-visible {
 .winmodal__title {
   flex: 1 1 auto;
   text-align: center;
-  margin-right: 52px; /* balance the traffic lights */
+  /* balance the traffic lights: their 61px block (3 x 15 + 2 x 8 gap) plus the
+     10px gap the bar puts between the lights and the title */
+  margin-right: 71px;
   font-size: 13px;
   font-weight: 600;
   color: #3a3a3c;
@@ -1034,7 +1037,7 @@ button.menubar__item:focus-visible {
   max-width: 1400px;
   max-height: 900px;
   display: flex;
-  background: #ececed;
+  background: white;
   border-radius: 26px;
   overflow: hidden;
   /* soft ambient shadow so the window floats above the (undimmed) desktop */
@@ -1087,13 +1090,13 @@ button.menubar__item:focus-visible {
   gap: 8px;
 }
 .nw__lights .wl {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
 }
 .nw__lights .wl__g {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
 }
 .nw__side-actions {
   display: flex;
@@ -1564,7 +1567,7 @@ button.menubar__item:focus-visible {
   max-width: 1400px;
   max-height: 900px;
   display: flex;
-  background: #ececed;
+  background: white;
   border-radius: 26px;
   overflow: hidden;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.32), 0 6px 20px rgba(0, 0, 0, 0.18),
@@ -1609,13 +1612,13 @@ button.menubar__item:focus-visible {
   padding: 0 16px;
 }
 .fw__side-top .wl {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
 }
 .fw__side-top .wl__g {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
 }
 .fw__list {
   flex: 1 1 auto;
@@ -3805,13 +3808,13 @@ button.menubar__item:focus-visible {
   padding: 0 15px;
 }
 .set__side-top .wl {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
 }
 .set__side-top .wl__g {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
 }
 .set__search {
   margin: 2px 12px 10px;
@@ -6120,5 +6123,516 @@ button.menubar__item:focus-visible {
   }
   .cw__card--wide {
     grid-column: auto;
+  }
+}
+
+/* ===================================================================== */
+/* ============================ LOCK SCREEN ============================ */
+/* ===================================================================== */
+/* Covers the whole app until the padlock is clicked. macOS puts the clock up
+   top with the user down below; iOS stacks date over a huge clock. */
+.lock {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  background: #0b0b0d;
+  display: flex;
+  color: #fff;
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.3, 0, 0.2, 1),
+    filter 0.55s ease;
+}
+.lock__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill without ever stretching the frame */
+  object-position: center;
+  display: block;
+  /* the source is only 736x414, so it is being scaled up a long way — nudge the
+     browser toward its better scaler and keep any blur off the video itself */
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+/* keeps the time legible whatever frame the clip is on */
+.lock__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.16) 32%,
+    rgba(0, 0, 0, 0.22) 68%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+.lock__inner {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7vh 24px 6vh;
+  text-align: center;
+}
+
+/* ---- padlock + clock ---- */
+.lock__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.lock__btn {
+  width: 66px;
+  height: 66px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.lock__btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: scale(1.05);
+}
+.lock__btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+.lock__ic {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.lock__ic--open {
+  opacity: 0;
+  transform: scale(0.9);
+}
+/* the shackle springs open the moment it is clicked, before the screen leaves */
+.lock--open .lock__ic--shut {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.lock--open .lock__ic--open {
+  opacity: 1;
+  transform: scale(1);
+}
+.lock--open .lock__btn {
+  background: rgba(255, 255, 255, 0.3);
+}
+.lock__date {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+.lock__clock {
+  font-size: clamp(70px, 11vw, 132px);
+  font-weight: 250;
+  line-height: 1;
+  letter-spacing: -3px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 4px 26px rgba(0, 0, 0, 0.42);
+}
+
+/* ---- user ---- */
+.lock__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;            /* breathing room between the padlock and the line */
+  padding-bottom: 14vh; /* sits up from the bottom edge */
+}
+.lock__hint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- leaving: dissolve upward, the way macOS does ---- */
+.lock--gone {
+  opacity: 0;
+  transform: scale(1.06);
+  filter: blur(6px);
+  pointer-events: none;
+}
+.lock--hidden {
+  display: none;
+}
+
+/* ---- iPhone: date over a huge clock, home indicator at the bottom ---- */
+@media (max-width: 720px) {
+  .lock__inner {
+    padding: 8vh 20px 3vh;
+  }
+  .lock__foot {
+    gap: 16px;
+    padding-bottom: 16vh;
+  }
+  .lock__btn {
+    width: 60px;
+    height: 60px;
+    margin-top: 8px;
+  }
+  .lock__ic {
+    width: 31px;
+    height: 31px;
+  }
+  .lock__date {
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .lock__clock {
+    font-size: clamp(78px, 23vw, 104px);
+    letter-spacing: -2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lock,
+  .lock__ic,
+  .lock__btn {
+    transition: none;
+  }
+  .lock--gone {
+    filter: none;
+    transform: none;
+  }
+}
+
+/* ---- phone: pull the framing back so the clip isn't blown up and cropped ----
+   A 736x414 landscape source filling a 390x844 portrait screen has to throw away
+   ~74% of the frame's width, which is what reads as "stretched". Sitting it in a
+   band at its own aspect shows the whole shot, with a blurred still filling the
+   rest so the screen is never bare. */
+@media (max-width: 720px) {
+  .lock__video {
+    /* Full height would crop ~74% of this landscape frame away, which is what
+       reads as stretched. A tall centred band keeps it filling the width while
+       showing far more of the shot — roughly 40% of the frame instead of 26%. */
+    top: 50%;
+    bottom: auto;
+    height: 72%;
+    transform: translateY(-50%);
+    object-fit: cover;
+    /* dissolve the band's edges into the blurred backdrop instead of cutting a
+       hard horizontal seam across the screen */
+    -webkit-mask-image: linear-gradient(
+      180deg, transparent 0, #000 12%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(
+      180deg, transparent 0, #000 12%, #000 84%, transparent 100%);
+  }
+  .lock::before {
+    content: "";
+    position: absolute;
+    inset: -8%;
+    background: url("lockscreen-poster.jpg") center / cover no-repeat;
+    filter: blur(34px) saturate(120%) brightness(0.55);
+    transform: scale(1.1);
+  }
+}
+
+/* ---- speaker, top-left corner ---- */
+.lock__sound {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.lock__sound:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: scale(1.06);
+}
+.lock__sound:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+.lock__sic {
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  display: block;
+}
+.lock__sic .lock__wave {
+  fill: none;
+}
+/* muted is the resting look; the class flips it once audio is actually running */
+.lock__sic--on {
+  opacity: 0;
+}
+.lock--sound .lock__sic--on {
+  opacity: 1;
+}
+.lock--sound .lock__sic--off {
+  opacity: 0;
+}
+
+
+/* ---- search inputs (Projects + About) ---- */
+.nw__search-in {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: #1d1d1f;
+}
+.nw__search-in::placeholder {
+  color: #9a9a9a;
+}
+/* the OS-drawn clear button clashes with the pill; ours is Escape */
+.nw__search-in::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.nw__search:focus-within {
+  border-color: rgba(0, 122, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.16);
+}
+
+/* empty states */
+.fw__empty {
+  grid-column: 1 / -1;
+  padding: 44px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #8a8a8e;
+}
+.nw__empty {
+  padding: 24px 0;
+  font-size: 15px;
+  color: #8a8a8e;
+}
+
+/* ===================================================================== */
+/* ====== MOBILE APP CHROME — iOS Files style: floating glass back ====== */
+/* ====== button over the content, large title, no separate bar   ====== */
+/* ===================================================================== */
+@media (max-width: 720px) {
+  /* The back button used to live inside a white strip that acted as a second
+     header. Float it over the content instead and collapse the strip, so each
+     app shows one heading — its own — exactly like Files does. */
+  .ios-back {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 20;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    /* black glass: the white chevron then reads clearly on the light Projects /
+       About backgrounds as well as the dark Spotify and game ones */
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex: 0 0 auto;
+    transition: background 0.14s ease, transform 0.14s ease;
+  }
+  .ios-back:active {
+    transform: scale(0.94);
+    background: rgba(0, 0, 0, 0.78);
+  }
+  .ios-back svg {
+    width: 21px;
+    height: 21px;
+    margin: 0;
+    stroke-width: 2.6;
+  }
+  /* the word "Home" goes — the glyph carries it, as in the reference */
+  .ios-back span {
+    display: none;
+  }
+
+  /* collapse the strips that only existed to hold it (it is absolute now, so
+     they must stay visible — zero height rather than display:none) */
+  .winmodal__bar {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent !important;
+  }
+  .winmodal__title {
+    display: none;
+  }
+  .fw__side-top,
+  .nw__side-top,
+  .set__side-top {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  /* the app's own title becomes the large iOS heading */
+  .finderwin .fw__title,
+  .noteswin .nw__title-main {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
+  }
+  /* These two put a horizontal tab strip at the very top, which the floating
+     button would sit on. Give the strip its own room instead of overlapping. */
+  .finderwin .fw__sidebar,
+  .noteswin .nw__sidebar {
+    padding-top: 60px;
+  }
+  .finderwin .fw__toolbar,
+  .noteswin .nw__toolbar {
+    height: auto;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  /* Spotify and the games already carry their own heading, so they only need
+     room at the top for the button to sit clear of the content */
+  .spotwin .sp__scroll {
+    padding-top: 8px;
+  }
+  .spotwin .sp__hero {
+    padding-top: 62px;
+  }
+  .winmodal__window .winmodal__body {
+    padding-top: 62px;
+  }
+}
+
+/* ---- About on mobile: one heading, share paired with the back button ---- */
+@media (max-width: 720px) {
+  /* The toolbar's title duplicated the note's own <h1> right below it, and the
+     timestamp sat between them. Both go; the note supplies the heading. */
+  .noteswin .nw__toolbar {
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+  .noteswin .nw__title {
+    display: none;
+  }
+  .noteswin .nw__date {
+    display: none;
+  }
+  /* share mirrors the back button: same size, same inset, opposite corner */
+  .noteswin .nw__circ {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: auto;
+    z-index: 20;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    color: #fff;
+    transition: background 0.14s ease, transform 0.14s ease;
+  }
+  .noteswin .nw__circ:active {
+    transform: scale(0.94);
+    background: rgba(0, 0, 0, 0.78);
+  }
+  .noteswin .nw__circ svg {
+    width: 19px;
+    height: 19px;
+    stroke: currentColor;
+    fill: none;
+  }
+  /* the note starts where the toolbar used to, so nothing hides under the buttons */
+  .noteswin .nw__content {
+    padding-top: 14px;
+  }
+}
+
+/* ---- Projects on mobile: share paired with back, heading given room ---- */
+@media (max-width: 720px) {
+  /* share mirrors the back button, same as the About window */
+  .finderwin .nw__circ {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: auto;
+    z-index: 20;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    color: #fff;
+    transition: background 0.14s ease, transform 0.14s ease;
+  }
+  .finderwin .nw__circ:active {
+    transform: scale(0.94);
+    background: rgba(0, 0, 0, 0.78);
+  }
+  .finderwin .nw__circ svg {
+    width: 19px;
+    height: 19px;
+    stroke: currentColor;
+    fill: none;
+  }
+  /* breathing room between the tab strip and the "Recents" heading */
+  .finderwin .fw__toolbar {
+    padding-top: 18px;
+    padding-bottom: 4px;
   }
 }
