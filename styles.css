@@ -1072,7 +1072,7 @@ button.menubar__item:focus-visible {
   background: #fff;
   border-radius: 20px;
   /* soft shadow on the RIGHT side only (negative spread hides top/left/bottom) */
-  box-shadow: 14px 0 22px -12px rgba(0, 0, 0, 0.22);
+  box-shadow: 8px 0 10px -12px rgba(0, 0, 0, 0.22);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1599,7 +1599,9 @@ button.menubar__item:focus-visible {
   margin: 6px 0 6px 6px;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 14px 0 22px -12px rgba(0, 0, 0, 0.22);
+  /* the same right-edge shadow About Me's drawer casts (was 14px 0 22px, which
+     read noticeably heavier beside it) */
+  box-shadow: 8px 0 10px -12px rgba(0, 0, 0, 0.22);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1907,27 +1909,12 @@ button.menubar__item:focus-visible {
   color: #1d1d1f;
   min-width: 0;
 }
-.pj__star {
-  flex: 0 0 auto;
-  border: 0;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  color: #c2c2c6;
-}
-.pj__star svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-}
 .pj__cat {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #2f6bf0;
-  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  /* muted, not link-blue: the actions below are the things to click now */
+  color: #6e6e73;
+  margin-top: 5px;
 }
 .pj__tags {
   display: flex;
@@ -1947,42 +1934,6 @@ button.menubar__item:focus-visible {
 .pj__tag--orange { background: #fdeede; color: #d9820a; }
 .pj__tag--teal { background: #dcf5f0; color: #0f9b8e; }
 .pj__tag--gray { background: #eeeef1; color: #6a6a70; }
-.pj__meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.07);
-  color: #8a8a8e;
-}
-.pj__metaitem {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12.5px;
-}
-.pj__metaitem svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.pj__more {
-  margin-left: auto;
-  border: 0;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  color: #b0b0b4;
-}
-.pj__more svg {
-  width: 18px;
-  height: 18px;
-}
 .pj__more:hover {
   color: #007aff;
 }
@@ -2051,35 +2002,6 @@ button.menubar__item:focus-visible {
   margin-bottom: 0;
 }
 
-/* ---- ⋯ options menu ---- */
-.pj__menu {
-  position: fixed;
-  z-index: 3000;
-  min-width: 168px;
-  background: rgba(250, 250, 252, 0.98);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 0.5px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.26);
-  padding: 6px;
-}
-.pj__menu-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: 0;
-  background: none;
-  font-size: 13.5px;
-  color: #1d1d1f;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.pj__menu-item:hover {
-  background: #007aff;
-  color: #fff;
-}
 
 /* ---- back button in the Finder toolbar ---- */
 .fw__back {
@@ -3501,7 +3423,6 @@ button.menubar__item:focus-visible {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   }
   .ios__about,
-  .ios__cal,
   .ios__skills {
     min-height: 158px;
     display: flex;
@@ -3510,45 +3431,11 @@ button.menubar__item:focus-visible {
   .ios__about {
     background: linear-gradient(155deg, #3a2b6e, #7c3aed 58%, #ff5c8a);
   }
-  .ios__about-hi {
-    font-size: 19px;
-    font-weight: 800;
-    line-height: 1.15;
-  }
-  .ios__about-role {
-    margin-top: auto;
-    font-size: 13px;
-    font-weight: 600;
-    opacity: 0.95;
-  }
-  .ios__about-loc {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-top: 3px;
-  }
-  .ios__cal,
   .ios__skills {
     background: rgba(28, 28, 32, 0.55);
     backdrop-filter: blur(30px) saturate(140%);
     -webkit-backdrop-filter: blur(30px) saturate(140%);
     border: 0.5px solid rgba(255, 255, 255, 0.08);
-  }
-  .ios__cal-day {
-    color: #ff453a;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .ios__cal-num {
-    font-size: 46px;
-    font-weight: 800;
-    line-height: 1;
-    margin-top: 2px;
-  }
-  .ios__cal-sub {
-    margin-top: auto;
-    font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.7);
   }
   .ios__skills-title {
     font-size: 12px;
@@ -3683,11 +3570,10 @@ button.menubar__item:focus-visible {
     overflow: hidden;
   }
 
-  /* flatten the desktop "frosted band" headers into clean iOS titles */
-  .ios .exp__header,
-  .ios .exp__title,
-
-  /* Experience timeline */
+  /* Experience timeline. NOTE: .ios .exp__header and .ios .exp__title used to be
+     stranded at the head of this selector list — their own declaration block was
+     lost in an earlier edit, so both silently inherited the timeline's padding
+     and the header rendered 38px taller than the Mac's. They are styled below. */
   .ios .exp__timeline {
     gap: 20px;
     padding: 16px 20px 22px 44px;
@@ -6113,7 +5999,8 @@ button.menubar__item:focus-visible {
   .cw {
     flex-direction: column;
     gap: 22px;
-    padding: 22px 18px 28px;
+    /* top pad clears the floating back disc, which the bar no longer holds */
+    padding: 62px 18px 30px;
   }
   .cw__side {
     flex: 0 0 auto;
@@ -6621,5 +6508,810 @@ button.menubar__item:focus-visible {
   .finderwin .fw__toolbar {
     padding-top: 18px;
     padding-bottom: 4px;
+  }
+}
+
+/* ===================================================================== */
+/* ============== PROJECT CARD — actions on the card ==================== */
+/* ===================================================================== */
+/* View Details and Live Site used to sit behind a ⋯ menu. They are the two
+   things anyone actually wants, so they live on the card itself now. */
+.pj__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+.pj__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;      /* pinned to the bottom, so rows line up across the grid */
+  padding-top: 16px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+.pj__act {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.pj__act--primary {
+  background: #1d1d1f;
+  color: #fff;
+}
+.pj__act--primary:hover {
+  background: #333336;
+}
+.pj__act--ghost {
+  background: #fff;
+  color: #1d1d1f;
+  border: 0.5px solid rgba(0, 0, 0, 0.16);
+}
+.pj__act--ghost:hover {
+  background: #f2f2f4;
+  border-color: rgba(0, 0, 0, 0.28);
+}
+.pj__extic {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the card is no longer a link, so lift only on a real hover of the surface */
+.pj:hover {
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+@media (max-width: 720px) {
+  .pj__act {
+    height: 38px;
+    font-size: 13.5px;
+  }
+}
+
+/* ===================================================================== */
+/* ====== MOBILE TAB BAR — floating glass pill, iOS Files style ======== */
+/* ===================================================================== */
+/* Projects and About kept their categories in a strip across the top. On a
+   phone that reads as a second header; iOS puts navigation in a floating pill
+   at the bottom instead, icon over label with the active one picked out. */
+@media (max-width: 720px) {
+  .finderwin .fw__sidebar,
+  .noteswin .nw__sidebar {
+    position: absolute;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 25;
+    width: auto;
+    max-width: calc(100% - 20px);
+    height: auto;
+    flex: 0 0 auto;
+    padding: 0;
+    margin: 0;
+    border-radius: 100px;
+    overflow: hidden;
+    /* liquid glass: heavy blur, a light rim, and an inner highlight along the
+       top edge — that top sheen is what reads as glass rather than flat grey */
+    background: rgba(30, 30, 32, 0.62);
+    backdrop-filter: blur(34px) saturate(190%);
+    -webkit-backdrop-filter: blur(34px) saturate(190%);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.46),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+  }
+
+  /* the row of tabs; scrolls sideways when there are more than the width fits */
+  .finderwin .fw__list,
+  .noteswin .nw__folders {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 2px;
+    padding: 6px;
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .finderwin .fw__list::-webkit-scrollbar,
+  .noteswin .nw__folders::-webkit-scrollbar {
+    display: none;
+  }
+  /* the Finder's "Portfolio" group label has no place in a tab bar */
+  .finderwin .fw__section {
+    display: none;
+  }
+
+  /* the tab bar shows the filled twins, not the sidebar's outlines */
+  .finderwin .fw__item-ic,
+  .noteswin .nw__fic {
+    display: none;
+  }
+  .finderwin .fw__item-ic--fill,
+  .noteswin .nw__fic--fill {
+    display: flex;
+    /* .fw__item-ic pins its own grey for the desktop sidebar; in the tab bar the
+       glyph must take the tab's colour (white, or blue when active) */
+    color: inherit;
+  }
+
+  .finderwin .fw__item,
+  .noteswin .nw__folder {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    /* auto width so each tab hugs its own label; the capsule tracks offsetWidth,
+       so it ends up sized to the tab rather than to a fixed slot */
+    width: auto;
+    min-width: 66px;
+    padding: 9px 14px 8px;
+    border-radius: 100px;
+    background: none;
+    color: #fff;              /* inactive is white, not dimmed */
+    white-space: nowrap;
+    transition: background 0.16s ease, color 0.16s ease;
+  }
+  .finderwin .fw__item svg,
+  .noteswin .nw__folder svg {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    fill: currentColor;       /* filled glyphs, SF Symbols .fill style */
+    stroke: none;
+  }
+  /* the tab bar swaps in the short label */
+  .finderwin .fw__item-label:not(.fw__item-label--short),
+  .noteswin .nw__fname:not(.nw__fname--short) {
+    display: none;
+  }
+  .finderwin .fw__item-label--short,
+  .noteswin .nw__fname--short {
+    display: block;
+  }
+  .finderwin .fw__item-label,
+  .noteswin .nw__fname {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* active: a lighter capsule behind it, blue glyph and label */
+  .finderwin .fw__item--active,
+  .noteswin .nw__folder--active {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.3);
+    color: #0a84ff;
+  }
+  .finderwin .fw__item--active svg,
+  .noteswin .nw__folder--active svg {
+    fill: #0a84ff;
+  }
+
+  /* nothing should end up hidden behind the pill */
+  .finderwin .fw__grid--projects,
+  .finderwin .fw__detail {
+    padding-bottom: 104px;
+  }
+  .noteswin .nw__content {
+    padding-bottom: 104px;
+    padding-top: 62px;
+  }
+  .finderwin .fw__footer {
+    display: none;
+  }
+  /* the strip is gone from the top, so the heading takes the back button's room */
+  .finderwin .fw__sidebar,
+  .noteswin .nw__sidebar {
+    padding-top: 0;
+  }
+  .finderwin .fw__toolbar {
+    padding-top: 62px;
+  }
+}
+
+/* filled icon twins are for the mobile tab bar only */
+.fw__item-ic--fill,
+.nw__fic--fill {
+  display: none;
+}
+.ic-fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ===================================================================== */
+/* ========== iOS 26 LIGHT GLASS — bar, buttons, backdrop ============== */
+/* ===================================================================== */
+@media (max-width: 720px) {
+  /* ---- plain white page behind both apps ---- */
+  .finderwin,
+  .finderwin .fw__main,
+  .noteswin,
+  .noteswin .nw__main,
+  .noteswin .nw__content {
+    background: #fff;
+  }
+
+  /* ---- back + share: white glass discs with a dark glyph ---- */
+  .ios-back,
+  .finderwin .nw__circ,
+  .noteswin .nw__circ {
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0.5px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.13);
+    color: #3a3a3c;
+  }
+  .ios-back:active,
+  .finderwin .nw__circ:active,
+  .noteswin .nw__circ:active {
+    background: rgba(240, 240, 244, 0.92);
+  }
+
+  /* ---- the pill itself ---- */
+  .finderwin .fw__sidebar,
+  .noteswin .nw__sidebar {
+    background: #fff;
+    /* opaque now, so the blur would cost compositing for nothing */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0.5px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  }
+
+  /* the scroller carries the sliding capsule, so it has to be a containing block */
+  .finderwin .fw__list,
+  .noteswin .nw__folders {
+    position: relative;
+  }
+  /* the capsule that glides between tabs — one per bar, moved by JS */
+  .tabind {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 0;
+    width: 0;
+    z-index: 0;
+    border-radius: 100px;
+    /* a white capsule would vanish on a white bar — tint it instead */
+    background: #f0f0f2;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    pointer-events: none;
+    /* slight overshoot, the way the iOS capsule settles */
+    transition: transform 0.42s cubic-bezier(0.34, 1.32, 0.44, 1),
+      width 0.42s cubic-bezier(0.34, 1.32, 0.44, 1), opacity 0.2s ease;
+  }
+
+  /* tabs sit above the capsule; dark glyphs on the light glass */
+  .finderwin .fw__item,
+  .noteswin .nw__folder {
+    position: relative;
+    z-index: 1;
+    color: #1c1c1e;
+  }
+  /* the capsule provides the active background now */
+  .finderwin .fw__item--active,
+  .noteswin .nw__folder--active {
+    background: none;
+    box-shadow: none;
+    color: #0a84ff;
+  }
+  .finderwin .fw__item--active svg,
+  .noteswin .nw__folder--active svg {
+    fill: #0a84ff;
+  }
+  .finderwin .fw__item svg,
+  .noteswin .nw__folder svg {
+    fill: currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabind {
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* About runs on the Notes amber, not the system blue — same accent its desktop
+   folder list already uses, so the app keeps one identity across both views. */
+@media (max-width: 720px) {
+  .noteswin .nw__folder--active,
+  .noteswin .nw__folder--active .nw__fname {
+    color: #f5b02e;
+  }
+  .noteswin .nw__folder--active svg {
+    fill: #f5b02e;
+  }
+}
+
+/* short tab labels are for the mobile bar only */
+.fw__item-label--short,
+.nw__fname--short {
+  display: none;
+}
+
+
+
+
+/* ===================================================================== */
+/* ===== iOS HOME: About card — the desktop Notes widget, 1:1 ========== */
+/* ===================================================================== */
+/* Same cream sheet and orange header band as .widget--notes on the Mac, in an
+   iOS widget's footprint. It is a <button> (tapping opens About Me), so the
+   browser's button defaults are reset back to the card it looks like. */
+@media (max-width: 720px) {
+  .ios__about {
+    -webkit-appearance: none;
+    appearance: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 26px; /* matches the Spotify tile beside it */
+    background: #fdfdfb;
+    border: 0.5px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    color: #2a2a2a;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+  }
+  .ios__about:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  }
+  /* the header band and body come straight from the desktop rules; only the
+     phone's slightly roomier padding is set here */
+  .ios__about .notes__header {
+    padding: 11px 15px;
+  }
+  .ios__about .notes__body {
+    padding: 14px 15px 13px;
+  }
+  .ios__about .notes__greeting {
+    font-size: 15px;
+  }
+  .ios__about .notes__text,
+  .ios__about .notes__date {
+    font-size: 13.5px;
+  }
+
+  /* Spotify sits in the same grid row, which stretches both to one height —
+     but the tile must not opt out of that stretch, or the pair drifts apart. */
+  .ios__row > .spw--tile {
+    align-self: stretch;
+  }
+}
+
+/* ===================================================================== */
+/* ===== MOBILE PARITY: Experience, the ambient clip, line icons ======= */
+/* ===================================================================== */
+@media (max-width: 720px) {
+  /* ---- Experience matches the Mac card: role left, dates right, and the
+     entries share the card's height so the rail runs edge to edge instead of
+     bunching at the top over a blank strip ---- */
+  .ios .exp__row {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+  }
+  .ios .exp__date {
+    padding-top: 2px;
+  }
+  .ios .widget--exp {
+    min-height: 250px; /* the height the three entries distribute across */
+  }
+  .ios .exp__item {
+    flex: 1 0 auto; /* grow into spare height, never shrink under the text */
+  }
+  .ios .exp__item:last-child {
+    flex: 0 0 auto; /* sits flush with the bottom padding; the others absorb slack */
+  }
+
+  /* ---- the ambient clip: no intrinsic height here, since .vidw__v is absolute ---- */
+  .ios .vidw {
+    height: 200px;
+    margin-bottom: 16px;
+  }
+
+  /* ---- tab bars use the outlined set, matching the desktop sidebars ---- */
+  .finderwin .fw__item-ic,
+  .noteswin .nw__fic {
+    display: flex;
+    color: inherit; /* .fw__item-ic pins the sidebar's grey; the tab sets its own */
+  }
+  .finderwin .fw__item-ic--fill,
+  .noteswin .nw__fic--fill {
+    display: none;
+  }
+}
+
+/* ---- tab-bar glyphs are outlines now, so they need the sidebar's stroke
+   treatment rather than the fill the .fill twins used. The --active selectors
+   are repeated here because the rules they override carry that extra class. ---- */
+@media (max-width: 720px) {
+  .finderwin .fw__item svg,
+  .noteswin .nw__folder svg,
+  .finderwin .fw__item--active svg,
+  .noteswin .nw__folder--active svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* the solid dots inside a few line icons (robot eyes, list bullets) stay solid */
+  .finderwin .fw__item svg [fill="currentColor"],
+  .noteswin .nw__folder svg [fill="currentColor"] {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  /* Experience type matches the Mac card exactly, which also buys back the
+     width the date needs to stay on the role's line */
+  .ios .exp__role {
+    font-size: 14.5px;
+  }
+}
+
+/* ---- Experience: the last differences from the Mac card were its own box.
+   .ios__widget added 16px of padding the desktop card does not have (which cost
+   the date its place on the role's line), the header ran two sizes larger, and
+   a content-sized card left the timeline no slack to distribute. ---- */
+@media (max-width: 720px) {
+  .ios .widget--exp {
+    padding: 0; /* the timeline supplies the inset, exactly as on the Mac */
+    min-height: 348px; /* the Mac card's height, so the entries space the same */
+  }
+  .ios .exp__header {
+    padding: 15px 20px;
+  }
+  .ios .exp__title {
+    font-size: 15px;
+  }
+  .ios .exp__timeline {
+    gap: 18px;
+    padding: 18px 20px 18px 44px;
+  }
+}
+
+/* The Notes sidebar glyphs are built by S(), which emits a bare <svg> with no
+   presentation attributes — so with no rule here they fell back to SVG's default
+   black fill and drew as solid shapes on the Mac. The Finder sidebar has carried
+   the equivalent rule all along; this is its missing twin. */
+.noteswin .nw__folder svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* solid dots drawn inside a few of the line icons keep their fill */
+.noteswin .nw__folder svg [fill="currentColor"] {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ===================================================================== */
+/* ===== MOBILE-ONLY: full-frame clip, header rule, tighter timeline === */
+/* ===================================================================== */
+@media (max-width: 720px) {
+  /* The source is a 720x1280 portrait clip. At a fixed 200px the card cropped
+     most of the frame away, so give it the footage's own aspect ratio and the
+     whole shot is visible with nothing cut off. */
+  .ios .vidw {
+    height: auto;
+    aspect-ratio: 9 / 16;
+  }
+
+  /* the hairline under "Experience", same as the Mac card's header */
+  .ios .exp__header {
+    padding: 16px 22px 13px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.22);
+  }
+  .ios .exp__title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* Entries sit at their natural height here rather than stretching to fill the
+     card, which is what put ~40px of dead space between each company. */
+  .ios .widget--exp {
+    min-height: 0;
+  }
+  .ios .exp__item,
+  .ios .exp__item:last-child {
+    flex: 0 0 auto;
+  }
+  .ios .exp__timeline {
+    gap: 14px;
+  }
+  /* the connector runs from this dot to the next, so it tracks the gap */
+  .ios .exp__item:not(:last-child)::before {
+    bottom: -23px;
+  }
+}
+
+/* ===================================================================== */
+/* ============ iOS APP LIBRARY SEARCH OVERLAY (mobile) =============== */
+/* ===================================================================== */
+/* Spotlight over the home screen: the wallpaper blurs behind a translucent
+   sheet, the field sits under the status bar with a Cancel beside it, and the
+   results are plain iOS rows. Phones only — the Mac has its own menu bar. */
+.iss {
+  position: absolute;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+}
+.iss__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(26px) saturate(140%);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+.iss--open .iss__scrim {
+  opacity: 1;
+}
+.iss__panel {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 46px 14px 0; /* clears the status bar */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.24s ease, transform 0.28s cubic-bezier(0.32, 1.2, 0.42, 1);
+}
+.iss--open .iss__panel {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---- field + Cancel ---- */
+.iss__bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iss__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+}
+.iss__field > svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.66);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.iss__in {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.iss__in::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+/* the platform's own clear affordance would sit on top of ours */
+.iss__in::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.iss__clear {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: none;
+  color: rgba(255, 255, 255, 0.55);
+}
+.iss__in:not(:placeholder-shown) ~ .iss__clear {
+  display: block;
+}
+.iss__clear svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.iss__cancel {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  cursor: pointer;
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  -webkit-tap-highlight-color: transparent;
+}
+.iss__cancel:active {
+  opacity: 0.55;
+}
+
+/* ---- results ---- */
+.iss__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 16px;
+  padding-bottom: 30px;
+}
+.isss {
+  padding: 14px 6px 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.issr {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 13px;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: #fff;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.issr:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+.issr__ic {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+}
+.issr__ic svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.issr__txt {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.issr__t {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.issr__s {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.issr__go {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.42);
+}
+.issr__go svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.issnone {
+  padding: 60px 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 21px;
+  font-weight: 600;
+}
+.issnone span {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iss__scrim,
+  .iss__panel {
+    transition: none;
+  }
+}
+
+/* ---- Desktop About Me: drop the toolbar heading. The note below already
+   carries its own <h1> with the same name, so this was the title twice over.
+   It also held the `margin-right: auto` that pushed share and search right,
+   hence the toolbar takes over that job. Phones already hide it. ---- */
+@media (min-width: 721px) {
+  .noteswin .nw__title {
+    display: none;
+  }
+  .noteswin .nw__toolbar {
+    justify-content: flex-end;
   }
 }

@@ -661,6 +661,38 @@
     '<div class="nw__crow"><span class="nw__crow-ic">' + icon + "</span>" +
     '<span class="nw__crow-text">' + text + "</span></div>";
 
+  // one icon per note, so the mobile tab bar isn't eight identical folders
+  const TABIC = {
+    "About Me": S('<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c0-3.6 3.2-6.2 7.2-6.2s7.2 2.6 7.2 6.2"/>'),
+    "Professional Experience": S('<rect x="3" y="7.5" width="18" height="12.5" rx="2.2"/><path d="M8.5 7.5V5.8A1.8 1.8 0 0 1 10.3 4h3.4a1.8 1.8 0 0 1 1.8 1.8v1.7"/>'),
+    "Internships": S('<path d="M12 4 22 9l-10 5L2 9z"/><path d="M6 11.4V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.6"/>'),
+    "Projects": S('<rect x="3.4" y="3.4" width="7.2" height="7.2" rx="2"/><rect x="13.4" y="3.4" width="7.2" height="7.2" rx="2"/><rect x="3.4" y="13.4" width="7.2" height="7.2" rx="2"/><rect x="13.4" y="13.4" width="7.2" height="7.2" rx="2"/>'),
+    "Skills": S('<path d="M12 3.2 14.1 9l5.9 2.1-5.9 2.1L12 19l-2.1-5.8L4 11.1 9.9 9z"/>'),
+    "Education": S('<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/>'),
+    "Certifications": S('<circle cx="12" cy="9.2" r="5.2"/><path d="M8.6 13.6 7.4 20.4 12 18.2l4.6 2.2-1.2-6.8"/>'),
+    "Contact": S('<rect x="3" y="5.5" width="18" height="13" rx="2.4"/><path d="M3.8 7 12 13l8.2-6"/>'),
+  };
+
+  // Filled twins of the tab icons. The sidebar on desktop uses the outlined set;
+  // the iOS-style tab bar uses these, the way SF Symbols' .fill variants work.
+  const F = (b) => '<svg viewBox="0 0 24 24" aria-hidden="true" class="ic-fill">' + b + "</svg>";
+  const TABIC_FILL = {
+    "About Me": F('<circle cx="12" cy="8" r="3.9"/><path d="M4.6 20.4c0-3.8 3.3-6.6 7.4-6.6s7.4 2.8 7.4 6.6z"/>'),
+    "Professional Experience": F('<path d="M9.6 5.6h4.8v1.6h2V5.6A2 2 0 0 0 14.4 3.6H9.6a2 2 0 0 0-2 2v1.6h2z"/><rect x="2.6" y="7.6" width="18.8" height="12.8" rx="2.6"/>'),
+    "Internships": F('<path d="M12 3.4 23 8.8l-11 5.4L1 8.8z"/><path d="M5.6 11.6v4.2c0 1.9 2.9 3.4 6.4 3.4s6.4-1.5 6.4-3.4v-4.2L12 15z"/>'),
+    "Projects": F('<rect x="3" y="3" width="8" height="8" rx="2.3"/><rect x="13" y="3" width="8" height="8" rx="2.3"/><rect x="3" y="13" width="8" height="8" rx="2.3"/><rect x="13" y="13" width="8" height="8" rx="2.3"/>'),
+    "Skills": F('<path d="M12 2.4 14.4 8.9 21 11.3l-6.6 2.4L12 20.2 9.6 13.7 3 11.3l6.6-2.4z"/>'),
+    "Education": F('<path d="M3.4 5.4A1.8 1.8 0 0 1 5.2 3.6h5.9v16.8H5.2a1.8 1.8 0 0 1-1.8-1.8z"/><path d="M20.6 5.4a1.8 1.8 0 0 0-1.8-1.8h-5.9v16.8h5.9a1.8 1.8 0 0 0 1.8-1.8z"/>'),
+    "Certifications": F('<circle cx="12" cy="9" r="5.6"/><path d="M8.2 14.2 6.8 21.2 12 18.6l5.2 2.6-1.4-7a7.4 7.4 0 0 1-7.6 0z"/>'),
+    "Contact": F('<path fill-rule="evenodd" d="M2.4 7.2A2.6 2.6 0 0 1 5 4.6h14a2.6 2.6 0 0 1 2.6 2.6v9.6A2.6 2.6 0 0 1 19 19.4H5a2.6 2.6 0 0 1-2.6-2.6zM5.4 7 12 11.9 18.6 7z"/>'),
+  };
+
+  const TAB_SHORT = {
+    "About Me": "About",
+    "Professional Experience": "Experience",
+    "Certifications": "Certs",
+  };
+
   const CONTENT = {
     "About Me":
       '<h1 class="nw__h1">About Me</h1>' +
@@ -747,7 +779,17 @@
   };
   const TABS = Object.keys(CONTENT);
 
-  function open(originEl) {
+  // Plain-text index of every note, built once at load. The iOS App Library
+  // search matches against this, so "experience" or "aws" finds the note that
+  // actually mentions it rather than only the ones with it in the title.
+  const NOTE_TEXT = {};
+  TABS.forEach((n) => {
+    const d = document.createElement("div");
+    d.innerHTML = CONTENT[n] || "";
+    NOTE_TEXT[n] = (n + " " + (d.textContent || "")).toLowerCase();
+  });
+
+  function open(originEl, intent) {
     const sRect = screen.getBoundingClientRect();
     const w = (originEl || widget).getBoundingClientRect();
     const ox = w.left + w.width / 2 - sRect.left;
@@ -777,7 +819,10 @@
         '<ul class="nw__folders">' +
           TABS.map((n, i) =>
             '<li class="nw__folder' + (i === 0 ? " nw__folder--active" : "") + '">' +
-            ICON.folder + '<span class="nw__fname">' + n + "</span></li>"
+            '<span class="nw__fic">' + (TABIC[n] || ICON.folder) + "</span>" +
+            '<span class="nw__fic nw__fic--fill">' + (TABIC_FILL[n] || ICON.folder) + "</span>" +
+            '<span class="nw__fname">' + n + "</span>" +
+            '<span class="nw__fname nw__fname--short">' + (TAB_SHORT[n] || n) + "</span></li>"
           ).join("") +
         "</ul>" +
       "</aside>" +
@@ -876,7 +921,11 @@
       contentEl.scrollTop = 0;
     }
     folders.forEach((f) => f.addEventListener("click", () => selectTab(f)));
-    selectTab(folders[0]);
+    // `intent` lets a caller (the iOS search) land straight on one note
+    const wanted = intent && intent.tab
+      ? [...folders].find((f) => f.querySelector(".nw__fname").textContent === intent.tab)
+      : null;
+    selectTab(wanted || folders[0]);
 
     // ---- search: filter the folder list by name *and* note text ----
     const searchIn = win.querySelector(".nw__search-in");
@@ -928,6 +977,12 @@
       }
     });
   }
+
+  window.PortfolioNotes = {
+    tabs: TABS,
+    text: NOTE_TEXT,
+    open: (originEl, tab) => open(originEl || widget, tab ? { tab: tab } : null),
+  };
 
   widget.style.cursor = "pointer";
   widget.addEventListener("click", () => open(widget));
@@ -992,11 +1047,31 @@
     '<path d="M4 12a4 4 0 0 1 4-4h18l6 6h36a4 4 0 0 1 4 4v4H4z" fill="url(#fwBack)"/>' +
     '<path d="M4 17h72a4 4 0 0 1 4 4v29a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="url(#fwFront)"/></svg>';
 
+  const FI = (b) => '<svg viewBox="0 0 24 24" aria-hidden="true" class="ic-fill">' + b + "</svg>";
+  // filled twins for the mobile tab bar; the desktop sidebar keeps the outlines
+  const IFILL = {
+    all: FI('<path fill-rule="evenodd" d="M12 2.2a9.8 9.8 0 1 1 0 19.6 9.8 9.8 0 0 1 0-19.6zm1 4.4a1 1 0 1 0-2 0V12c0 .35.18.67.47.85l3.6 2.25a1 1 0 1 0 1.06-1.7L13 11.44z"/>'),
+    featured: FI('<rect x="3" y="3" width="8" height="8" rx="2.3"/><rect x="13" y="3" width="8" height="8" rx="2.3"/><rect x="3" y="13" width="8" height="8" rx="2.3"/><rect x="13" y="13" width="8" height="8" rx="2.3"/>'),
+    ai: FI('<circle cx="12" cy="3.4" r="1.5"/><rect x="11.2" y="4.4" width="1.6" height="3.4"/><path fill-rule="evenodd" d="M4.4 10.6a2.8 2.8 0 0 1 2.8-2.8h9.6a2.8 2.8 0 0 1 2.8 2.8v6.2a2.8 2.8 0 0 1-2.8 2.8H7.2a2.8 2.8 0 0 1-2.8-2.8zm5.2 2a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm4.8 0a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/>'),
+    devops: FI('<path d="M12 2.6 22.2 8.4 12 14.2 1.8 8.4z"/><path d="M3.6 12.1 1.8 13.1 12 18.9l10.2-5.8-1.8-1z"/><path d="M3.6 16.1 1.8 17.1 12 22.9l10.2-5.8-1.8-1z"/>'),
+    mobile: FI('<path fill-rule="evenodd" d="M6.4 4.6A2.4 2.4 0 0 1 8.8 2.2h6.4a2.4 2.4 0 0 1 2.4 2.4v14.8a2.4 2.4 0 0 1-2.4 2.4H8.8a2.4 2.4 0 0 1-2.4-2.4zm3.7 13.2h3.8a.9.9 0 0 1 0 1.8h-3.8a.9.9 0 0 1 0-1.8z"/>'),
+    web: FI('<path fill-rule="evenodd" d="M2.4 6.6A2.6 2.6 0 0 1 5 4h14a2.6 2.6 0 0 1 2.6 2.6v10.8A2.6 2.6 0 0 1 19 20H5a2.6 2.6 0 0 1-2.6-2.6zm2 2.4v8.4c0 .33.27.6.6.6h14a.6.6 0 0 0 .6-.6V9zm1.8-2.6a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm2.3 0a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/>'),
+  };
+  // the sidebar and page titles keep the full names; the tab bar shows these,
+  // so nothing has to truncate mid-word
+  const SHORT = {
+    featured: "Featured",
+    devops: "DevOps",
+    mobile: "Mobile",
+    web: "Web",
+  };
   const item = (icon, label, cls, group) =>
     '<div class="fw__item' + (cls ? " " + cls : "") + '"' +
     (group ? ' data-group="' + group + '"' : "") + ">" +
     '<span class="fw__item-ic">' + icon + "</span>" +
-    '<span class="fw__item-label">' + label + "</span></div>";
+    '<span class="fw__item-ic fw__item-ic--fill">' + (IFILL[group] || icon) + "</span>" +
+    '<span class="fw__item-label">' + label + "</span>" +
+    '<span class="fw__item-label fw__item-label--short">' + (SHORT[group] || label) + "</span></div>";
   const tag = (color, label) =>
     '<div class="fw__item"><span class="fw__tagdot" style="background:' + color + '"></span>' +
     '<span class="fw__item-label">' + label + "</span></div>";
@@ -1011,8 +1086,12 @@
     star: S('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 22l-5.2-2.4 1-5.8L3.5 9.7l5.9-.9z"/>'),
     more: S('<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>'),
   };
+  // outlined like every other glyph in this window — it keeps the blue so the
+  // card still reads as a folder, but drawn as a line rather than a solid tile
   const MINIFOLDER =
-    '<svg class="pj__folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5A1.5 1.5 0 0 1 4 5h5l1.6 1.6h8.9A1.5 1.5 0 0 1 21 8.1v9.4A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" fill="#4aa8f5"/></svg>';
+    '<svg class="pj__folder" viewBox="0 0 24 24" aria-hidden="true" fill="none" ' +
+    'stroke="#4aa8f5" stroke-width="1.6" stroke-linejoin="round">' +
+    '<path d="M3 8a2 2 0 0 1 2-2h3.4l1.7 2H19a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
   const AVATAR =
     '<svg class="pj__feat-svg" viewBox="0 0 80 90" aria-hidden="true"><rect width="80" height="90" rx="10" fill="#dfe1e6"/><circle cx="40" cy="33" r="15" fill="#b9bcc4"/><path d="M13 84c2.5-16 14-24 27-24s24.5 8 27 24z" fill="#b9bcc4"/></svg>';
   const MOCK = (theme) => {
@@ -1114,6 +1193,11 @@
     featured: "linear-gradient(135deg,#333,#555)",
   };
 
+  // external-link glyph for the "Live Site" action
+  const EXT = '<svg class="pj__extic" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M14 4h6v6"/><path d="M20 4l-8.5 8.5"/>' +
+    '<path d="M18 14.5V19a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19V8a1.5 1.5 0 0 1 1.5-1.5H10"/></svg>';
+
   function card(p, i) {
     const tags = p.tags
       .map((t) => '<span class="pj__tag pj__tag--' + t[1] + '">' + t[0] + "</span>")
@@ -1123,29 +1207,31 @@
       ? '<div class="pj__thumb" style="background:url(\'' + p.img + "') center / cover\">" +
           '<span class="pj__badge pj__badge--' + p.bc + '">' + p.badge + "</span></div>"
       : "";
-    const isLink = !!p.url;
-    const openTag = isLink
-      ? '<a class="pj" data-i="' + i + '" href="' + p.url + '" target="_blank" rel="noopener">'
-      : '<div class="pj" data-i="' + i + '">';
-    const closeTag = isLink ? "</a>" : "</div>";
+    // The card is no longer one big link. The two actions that matter are on it
+    // directly, so nothing important hides behind a menu.
     return (
-      openTag + thumb +
+      '<div class="pj" data-i="' + i + '">' + thumb +
         '<div class="pj__body">' +
           '<div class="pj__row">' + MINIFOLDER +
             '<span class="pj__title">' + p.title + "</span>" +
             (p.img ? "" : '<span class="pj__badge-inline pj__badge--' + p.bc + '">' + p.badge + "</span>") +
-            '<button class="pj__star">' + M.star + "</button></div>" +
+          "</div>" +
           '<div class="pj__cat">' + p.cat + "</div>" +
           '<div class="pj__tags">' + tags + "</div>" +
-          '<div class="pj__meta">' +
-            '<span class="pj__metaitem">' + M[p.mi] + p.mt + "</span>" +
-            '<span class="pj__metaitem">' + M.cal + p.yr + "</span>" +
-            '<button class="pj__more" aria-label="Options">' + M.more + "</button></div>" +
-        "</div>" + closeTag
+          '<div class="pj__actions">' +
+            '<button class="pj__act pj__act--primary" type="button" data-act="details">View Details</button>' +
+            // no live URL: don't invent a second label (several of these are
+            // badged "Live" already) — just let View Details take the row
+            (p.url
+              ? '<a class="pj__act pj__act--ghost" href="' + p.url + '" target="_blank" rel="noopener">Live Site' + EXT + "</a>"
+              : "") +
+          "</div>" +
+        "</div>" +
+      "</div>"
     );
   }
 
-  // full detail "page" shown when a card's ⋯ → View Details is chosen
+  // full detail "page" shown when a card's "View Details" is chosen
   function detailHTML(p) {
     const chips = (p.stack || [])
       .map((s) => '<span class="pj__chip">' + s + "</span>")
@@ -1176,7 +1262,7 @@
     );
   }
 
-  function open(originEl) {
+  function open(originEl, intent) {
     const sRect = screen.getBoundingClientRect();
     const r = (originEl || trigger).getBoundingClientRect();
     const ox = r.left + r.width / 2 - sRect.left;
@@ -1376,46 +1462,49 @@
       }
     });
 
-    // ⋯ → small menu ("View Details" / "Open Live Site")
-    let menuEl = null;
-    function closeMenu() {
-      if (menuEl) { menuEl.remove(); menuEl = null; }
-      document.removeEventListener("click", onDocClick);
-    }
-    function onDocClick(e) {
-      if (menuEl && !menuEl.contains(e.target)) closeMenu();
-    }
+    // "View Details" opens the detail page; "Live Site" is a plain link that
+    // needs no JS at all.
     grid.addEventListener("click", (e) => {
-      const moreBtn = e.target.closest(".pj__more");
-      if (!moreBtn) return;
+      const btn = e.target.closest('[data-act="details"]');
+      if (!btn) return;
       e.preventDefault();
-      e.stopPropagation();
-      const cardEl = moreBtn.closest(".pj");
+      const cardEl = btn.closest(".pj");
       const p = cardEl && state.list[+cardEl.dataset.i];
-      if (!p) return;
-      closeMenu();
-      menuEl = document.createElement("div");
-      menuEl.className = "pj__menu";
-      menuEl.innerHTML =
-        '<button class="pj__menu-item" data-act="details">View Details</button>' +
-        (p.url ? '<button class="pj__menu-item" data-act="site">Open Live Site</button>' : "");
-      // fixed to the viewport (body child) so it isn't clipped and positions reliably
-      document.body.appendChild(menuEl);
-      const br = moreBtn.getBoundingClientRect();
-      menuEl.style.top = br.bottom + 6 + "px";
-      menuEl.style.left = Math.max(8, br.right - 172) + "px";
-      menuEl.addEventListener("click", (ev) => {
-        const btn = ev.target.closest(".pj__menu-item");
-        if (!btn) return;
-        if (btn.dataset.act === "details") showDetail(p);
-        else if (btn.dataset.act === "site" && p.url) window.open(p.url, "_blank", "noopener");
-        closeMenu();
-      });
-      setTimeout(() => document.addEventListener("click", onDocClick), 0);
+      if (p) showDetail(p);
     });
 
-    renderGroup("all", "Recents");
+    // `intent` lets a caller (the iOS search) land on a group, a search term,
+    // or one project's detail page instead of the default Recents listing
+    const goto = (group) => {
+      const it = navItems.find((x) => x.dataset.group === group);
+      if (!it) return false;
+      navItems.forEach((x) => x.classList.remove("fw__item--active"));
+      it.classList.add("fw__item--active");
+      renderGroup(group, it.querySelector(".fw__item-label").textContent);
+      return true;
+    };
+    let handled = false;
+    if (intent && intent.project) {
+      const p = PROJECTS.find((x) => x.title === intent.project);
+      if (p) {
+        renderGroup("all", "Recents");
+        showDetail(p);
+        handled = true;
+      }
+    } else if (intent && intent.query) {
+      searchIn.value = intent.query;
+      state.query = intent.query;
+      renderGroup("all", "Recents");
+      handled = true;
+    } else if (intent && intent.group) {
+      handled = goto(intent.group);
+    }
+    if (!handled) renderGroup("all", "Recents");
   }
+
+  window.PortfolioFinder = {
+    open: (originEl, intent) => open(originEl || trigger, intent),
+  };
 
   trigger.style.cursor = "pointer";
   trigger.addEventListener("click", (e) => {
@@ -2263,6 +2352,19 @@
   // some dock icons are drawn with pseudo-elements/padding that don't scale when
   // cloned — give those a clean, scalable SVG instead
   const OVERRIDE = {
+    // Contacts has no dock counterpart to clone, so it ships its own artwork:
+    // the iOS Phone tile — green field, white handset.
+    contacts:
+      '<svg viewBox="0 0 100 100">' +
+      '<defs><linearGradient id="iosCallBg" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#5ff07a"/><stop offset="1" stop-color="#0bbf3f"/>' +
+      "</linearGradient></defs>" +
+      '<rect width="100" height="100" fill="url(#iosCallBg)"/>' +
+      // the handset is drawn in its own 512 grid and scaled to 48% of the tile,
+      // which is the proportion iOS uses — at full width it read as a fat blob
+      '<g transform="translate(26 26) scale(0.0938)" fill="#fff">' +
+      '<path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64c0 247.4 200.6 448 448 448 18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/>' +
+      "</g></svg>",
     notes:
       '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fdfdfb"/>' +
       '<rect width="100" height="27" fill="#ffcf2e"/>' +
@@ -2290,9 +2392,14 @@
     });
   }
 
+  // slots with no dock twin: they call a window module directly
+  const ACTION = {
+    contacts: (slot) => window.ContactsApp && window.ContactsApp.open(slot),
+  };
+
   ios.querySelectorAll(".ios__app").forEach((slot, i) => {
     const key = slot.dataset.app;
-    const real = document.querySelector(MAP[key]);
+    const real = MAP[key] ? document.querySelector(MAP[key]) : null;
     const ic = slot.querySelector(".ios__app-ic");
     if (OVERRIDE[key]) {
       ic.innerHTML = OVERRIDE[key];
@@ -2306,7 +2413,12 @@
       ic.appendChild(clone);
     }
     // forward taps to the real trigger (opens the window / link exactly the same)
-    if (real) {
+    if (ACTION[key]) {
+      slot.addEventListener("click", (e) => {
+        e.preventDefault();
+        ACTION[key](slot);
+      });
+    } else if (real) {
       slot.addEventListener("click", (e) => {
         e.preventDefault();
         real.click();
@@ -2314,15 +2426,17 @@
     }
   });
 
-  // live date for the calendar widget
-  const day = ios.querySelector(".ios__cal-day");
-  const num = ios.querySelector(".ios__cal-num");
-  if (day && num) {
-    const d = new Date();
-    const names = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-    day.textContent = names[d.getDay()];
-    num.textContent = d.getDate();
-  }
+  // widgets that open an app on tap (the About card opens About Me)
+  ios.querySelectorAll("[data-ios-open]").forEach((w) => {
+    const real = document.querySelector(MAP[w.dataset.iosOpen]);
+    if (!real) return;
+    w.addEventListener("click", (e) => {
+      e.preventDefault();
+      real.click();
+    });
+  });
+
+
 })();
 
 /* ===================== MOBILE: iOS "‹ Home" back button in app windows ===================== */
@@ -2335,8 +2449,11 @@
     if (!isMobile() || modal.querySelector(".ios-back")) return;
     const closeBtn = modal.querySelector(".wl--close");
     if (!closeBtn) return;
-    const lights = closeBtn.closest(".nw__lights, .winmodal__lights");
-    const host = (lights && lights.parentElement) || modal;
+    // Attach to the window root, not to the strip that holds the traffic lights.
+    // That strip is the tab bar's container on mobile and is itself positioned,
+    // which would drag this absolutely-positioned button down into the pill.
+    const host =
+      modal.querySelector(".winmodal__window, .noteswin, .finderwin, .settingswin") || modal;
     const back = document.createElement("button");
     back.className = "ios-back";
     back.type = "button";
@@ -2909,20 +3026,23 @@
    Playback is paused while the tab is hidden, and skipped entirely for anyone
    who asked for reduced motion. */
 (function () {
-  const vid = document.querySelector(".vidw__v");
-  if (!vid) return;
+  // one card on the Mac desktop, one at the foot of the iOS home
+  const vids = [...document.querySelectorAll(".vidw__v")];
+  if (!vids.length) return;
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) return; // the poster frame is enough
 
   const play = () => {
-    const r = vid.play();
-    if (r && r.catch) r.catch(() => {});
+    vids.forEach((v) => {
+      const r = v.play();
+      if (r && r.catch) r.catch(() => {});
+    });
   };
 
   play();
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) vid.pause();
+    if (document.hidden) vids.forEach((v) => v.pause());
     else play();
   });
 })();
@@ -3223,4 +3343,316 @@
 
   // focus the padlock so it can be triggered straight from the keyboard
   requestAnimationFrame(() => btn.focus({ preventScroll: true }));
+})();
+
+/* ===================== MOBILE TAB BAR — sliding glass capsule =====================
+   iOS 26 moves a single lit capsule between tabs rather than repainting the
+   background of each one. One element per bar, translated and resized to the
+   active tab, so the highlight glides instead of blinking. */
+(function () {
+  const screen = document.querySelector(".screen");
+  if (!screen || !("MutationObserver" in window)) return;
+  const isPhone = () => window.matchMedia("(max-width: 720px)").matches;
+
+  function attach(scroller, activeSel) {
+    if (!scroller || scroller.dataset.tabind) return;
+    scroller.dataset.tabind = "1";
+
+    const ind = document.createElement("span");
+    ind.className = "tabind";
+    scroller.insertBefore(ind, scroller.firstChild);
+
+    function move(animate) {
+      const act = scroller.querySelector(activeSel);
+      if (!act || !isPhone()) {
+        ind.style.opacity = "0";
+        return;
+      }
+      if (!animate) ind.style.transition = "none";
+      ind.style.opacity = "1";
+      ind.style.width = act.offsetWidth + "px";
+      ind.style.transform = "translateX(" + act.offsetLeft + "px)";
+      if (!animate) requestAnimationFrame(() => (ind.style.transition = ""));
+    }
+
+    // the tab's own handler runs first (it bubbles), so the active class is set
+    // by the time this fires
+    scroller.addEventListener("click", () => requestAnimationFrame(() => move(true)));
+    window.addEventListener("resize", () => move(false));
+    // fonts/icons can shift widths after first paint — settle once more
+    requestAnimationFrame(() => move(false));
+    setTimeout(() => move(false), 260);
+  }
+
+  function scan(node) {
+    if (!node || node.nodeType !== 1 || !node.querySelector) return;
+    attach(node.querySelector(".fw__list"), ".fw__item--active");
+    attach(node.querySelector(".nw__folders"), ".nw__folder--active");
+  }
+
+  new MutationObserver((muts) =>
+    muts.forEach((m) => m.addedNodes.forEach(scan))
+  ).observe(screen, { childList: true });
+})();
+
+/* ===================== iOS APP LIBRARY SEARCH (mobile) =====================
+   The bar at the top of the iOS home was decoration. This turns it into a real
+   Spotlight-style search: tap it and an overlay slides over the home screen,
+   typing filters apps, projects, note sections and links, and picking a result
+   opens exactly that thing — a note lands on its own tab, a project opens its
+   detail page, a link follows the dock icon it mirrors. */
+(function () {
+  const bar = document.querySelector(".ios__search");
+  const screen = document.querySelector(".screen");
+  if (!bar || !screen) return;
+
+  const dock = (cls) => document.querySelector(".dock .dock__app--" + cls);
+  const S = (b) => '<svg viewBox="0 0 24 24" aria-hidden="true">' + b + "</svg>";
+
+  const IC = {
+    app: S('<rect x="3.4" y="3.4" width="7.2" height="7.2" rx="2"/><rect x="13.4" y="3.4" width="7.2" height="7.2" rx="2"/><rect x="3.4" y="13.4" width="7.2" height="7.2" rx="2"/><rect x="13.4" y="13.4" width="7.2" height="7.2" rx="2"/>'),
+    note: S('<path d="M6 3.4h8.6L19 7.8V20a1.6 1.6 0 0 1-1.6 1.6H6A1.6 1.6 0 0 1 4.4 20V5A1.6 1.6 0 0 1 6 3.4z"/><path d="M14 3.6V8h4.4"/><path d="M8 12.5h8M8 16h5.5"/>'),
+    doc: S('<path d="M6 3.4h8.6L19 7.8V20a1.6 1.6 0 0 1-1.6 1.6H6A1.6 1.6 0 0 1 4.4 20V5A1.6 1.6 0 0 1 6 3.4z"/><path d="M14 3.6V8h4.4"/><path d="M12 11v6"/><path d="M9.4 14.4 12 17l2.6-2.6"/>'),
+    link: S('<path d="M10.4 13.6a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.3 1.3"/><path d="M13.6 10.4a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1.3-1.3"/>'),
+    music: S('<path d="M9 18V6l11-2v12"/><ellipse cx="6.4" cy="18" rx="2.6" ry="2.2"/><ellipse cx="17.4" cy="16" rx="2.6" ry="2.2"/>'),
+    phone: S('<path d="M8.4 4.2 5.9 6.6c-.8.8-1 2-.6 3 2.6 7 8.1 12.5 15.1 15.1"/>'),
+    call: S('<path d="M7.6 3.9 5.3 6.1a2.4 2.4 0 0 0-.6 2.5A21.4 21.4 0 0 0 15.4 19.3c.9.3 1.9.1 2.5-.6l2.2-2.3a1.4 1.4 0 0 0 0-2l-3-3a1.5 1.5 0 0 0-2.1 0L13.6 12.6a15 15 0 0 1-4.2-4.2L10.8 7a1.5 1.5 0 0 0 0-2.1l-3-3a1.4 1.4 0 0 0-.2 0z"/>'),
+    game: S('<rect x="2.6" y="7" width="18.8" height="10.4" rx="4.2"/><path d="M7 10.6v3.2M5.4 12.2h3.2"/><circle cx="15.6" cy="11.6" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="13.4" r="1" fill="currentColor" stroke="none"/>'),
+    folder: S('<path d="M3 8a2 2 0 0 1 2-2h3.4l1.7 2H19a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    person: S('<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c0-3.6 3.2-6.2 7.2-6.2s7.2 2.6 7.2 6.2"/>'),
+  };
+
+  // ---- what the search can find ------------------------------------------
+  // `keys` are extra words that should match beyond the title/subtitle, so
+  // "cv" finds the resume and "repo" finds GitHub.
+  const APPS = [
+    { title: "Projects", sub: "App", icon: IC.app, keys: "projects work portfolio finder case studies apps",
+      run: () => window.PortfolioFinder && window.PortfolioFinder.open() },
+    { title: "About Me", sub: "App", icon: IC.note, keys: "about me bio profile notes who monu",
+      run: () => window.PortfolioNotes && window.PortfolioNotes.open() },
+    { title: "Resume", sub: "PDF", icon: IC.doc, keys: "resume cv curriculum vitae pdf download",
+      run: () => dock("acrobat") && dock("acrobat").click() },
+    { title: "Contacts", sub: "App", icon: IC.call, keys: "contact contacts call phone email reach hire",
+      run: () => window.ContactsApp && window.ContactsApp.open(bar) },
+    { title: "Spotify", sub: "App", icon: IC.music, keys: "spotify music songs playlist lofi delulu",
+      run: () => window.SpotifyApp && window.SpotifyApp.open(bar) },
+    { title: "LinkedIn", sub: "Link", icon: IC.link, keys: "linkedin social network profile connect",
+      run: () => dock("linkedin") && dock("linkedin").click() },
+    { title: "GitHub", sub: "Link", icon: IC.link, keys: "github git repo repos code source open source",
+      run: () => dock("github") && dock("github").click() },
+    { title: "Tic-Tac-Toe", sub: "Game", icon: IC.game, keys: "tic tac toe game play noughts crosses",
+      run: () => document.querySelector('[data-game="ttt"]').click() },
+    { title: "Memory", sub: "Game", icon: IC.game, keys: "memory game play cards match",
+      run: () => document.querySelector('[data-game="memory"]').click() },
+  ];
+
+  const GROUPS = [
+    { g: "featured", title: "Featured Projects", keys: "featured highlighted best top live" },
+    { g: "ai", title: "AI / ML", keys: "ai ml machine learning llm openai rag" },
+    { g: "devops", title: "Cloud & DevOps", keys: "cloud devops aws infrastructure docker kubernetes ci cd" },
+    { g: "mobile", title: "Mobile Apps", keys: "mobile app ios android react native" },
+    { g: "web", title: "Web Apps", keys: "web website frontend fullstack saas" },
+  ];
+
+  function catalogue() {
+    const out = APPS.map((a) => ({ ...a, section: "Applications" }));
+
+    (window.PortfolioNotes ? window.PortfolioNotes.tabs : []).forEach((t) => {
+      out.push({
+        title: t, sub: "About Me", icon: IC.note, section: "About Me",
+        keys: (window.PortfolioNotes.text[t] || ""),
+        run: () => window.PortfolioNotes.open(bar, t),
+      });
+    });
+
+    GROUPS.forEach((g) =>
+      out.push({
+        title: g.title, sub: "Projects", icon: IC.folder, section: "Categories", keys: g.keys,
+        run: () => window.PortfolioFinder && window.PortfolioFinder.open(bar, { group: g.g }),
+      })
+    );
+
+    (window.PortfolioProjects || []).forEach((p) =>
+      out.push({
+        title: p.title, sub: p.cat, icon: IC.folder, section: "Projects",
+        keys: [p.title, p.cat, p.desc, (p.stack || []).join(" "),
+               (p.tags || []).map((t) => t[0]).join(" ")].join(" "),
+        run: () => window.PortfolioFinder && window.PortfolioFinder.open(bar, { project: p.title }),
+      })
+    );
+    return out;
+  }
+
+  let ITEMS = null;
+  const norm = (s) => (s || "").toLowerCase();
+
+  // rank: title prefix beats a title word beats a title substring beats a
+  // body-text hit, so typing "res" puts Resume above a project that mentions it
+  function score(item, q) {
+    const t = norm(item.title), sub = norm(item.sub), keys = norm(item.keys);
+    if (t.startsWith(q)) return 0;
+    if (new RegExp("\\b" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(t)) return 1;
+    if (t.includes(q)) return 2;
+    if (sub.includes(q)) return 3;
+    if (new RegExp("\\b" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(keys)) return 4;
+    if (keys.includes(q)) return 5;
+    return -1;
+  }
+
+  function search(query) {
+    const q = norm(query).trim();
+    if (!q) return [];
+    const words = q.split(/\s+/);
+    return ITEMS
+      .map((it) => {
+        // every word has to hit something, and the best word's rank wins
+        let best = 99;
+        for (const w of words) {
+          const sc = score(it, w);
+          if (sc < 0) return null;
+          best = Math.min(best, sc);
+        }
+        return { it, sc: best };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.sc - b.sc || a.it.title.localeCompare(b.it.title))
+      .map((r) => r.it);
+  }
+
+  // ---- overlay -----------------------------------------------------------
+  let ov = null, input = null, list = null;
+
+  const esc = (t) =>
+    String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  function rowHTML(it) {
+    return (
+      '<button class="issr" type="button" data-title="' + esc(it.title) + '">' +
+      '<span class="issr__ic">' + it.icon + "</span>" +
+      '<span class="issr__txt"><span class="issr__t">' + esc(it.title) + "</span>" +
+      '<span class="issr__s">' + esc(it.sub) + "</span></span>" +
+      '<span class="issr__go" aria-hidden="true">' +
+      S('<path d="M9 6l6 6-6 6"/>') + "</span></button>"
+    );
+  }
+
+  function render(results, query) {
+    if (!query) {
+      // empty box shows the apps, the way the App Library does
+      list.innerHTML =
+        '<div class="isss">Suggestions</div>' +
+        APPS.map(rowHTML).join("");
+      return;
+    }
+    if (!results.length) {
+      list.innerHTML =
+        '<div class="issnone">No Results<span>Try “resume”, “github”, “AWS” or a project name.</span></div>';
+      return;
+    }
+    // Bucket by section so each heading appears once. Results arrive in score
+    // order and a Map keeps insertion order, so a section lands where its
+    // best-ranked hit does — relevance still drives the ordering.
+    const buckets = new Map();
+    results.slice(0, 40).forEach((it) => {
+      if (!buckets.has(it.section)) buckets.set(it.section, []);
+      buckets.get(it.section).push(it);
+    });
+    let html = "";
+    buckets.forEach((items, section) => {
+      html += '<div class="isss">' + esc(section) + "</div>";
+      html += items.map(rowHTML).join("");
+    });
+    list.innerHTML = html;
+  }
+
+  let shown = [];
+  function update() {
+    const q = input.value;
+    shown = q.trim() ? search(q) : APPS.slice();
+    render(q.trim() ? shown : null, q.trim());
+  }
+
+  function close() {
+    if (!ov) return;
+    const el = ov;
+    ov = null;
+    el.classList.remove("iss--open");
+    input.blur();
+    setTimeout(() => el.remove(), 240);
+    document.removeEventListener("keydown", onKey);
+  }
+  function onKey(e) {
+    if (e.key === "Escape") {
+      if (input.value) { input.value = ""; update(); }
+      else close();
+    }
+  }
+
+  function openSearch() {
+    if (ov) return;
+    if (!ITEMS) ITEMS = catalogue(); // built lazily: the other modules load first
+    ov = document.createElement("div");
+    ov.className = "iss";
+    ov.innerHTML =
+      '<div class="iss__scrim"></div>' +
+      '<div class="iss__panel">' +
+        '<div class="iss__bar">' +
+          '<label class="iss__field">' +
+            S('<circle cx="10" cy="10" r="6.5"/><path d="M15 15l5 5"/>') +
+            '<input class="iss__in" type="search" placeholder="Search" ' +
+            'autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" ' +
+            'enterkeyhint="go" aria-label="Search apps and content">' +
+            '<button class="iss__clear" type="button" aria-label="Clear">' +
+              S('<circle cx="12" cy="12" r="9"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/>') +
+            "</button>" +
+          "</label>" +
+          '<button class="iss__cancel" type="button">Cancel</button>' +
+        "</div>" +
+        '<div class="iss__list"></div>' +
+      "</div>";
+    screen.appendChild(ov);
+    input = ov.querySelector(".iss__in");
+    list = ov.querySelector(".iss__list");
+    update();
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        ov.classList.add("iss--open");
+        input.focus();
+      })
+    );
+
+    ov.querySelector(".iss__scrim").addEventListener("click", close);
+    ov.querySelector(".iss__cancel").addEventListener("click", close);
+    ov.querySelector(".iss__clear").addEventListener("click", () => {
+      input.value = "";
+      update();
+      input.focus();
+    });
+    input.addEventListener("input", update);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const first = list.querySelector(".issr");
+        if (first) first.click();
+      }
+    });
+    list.addEventListener("click", (e) => {
+      const row = e.target.closest(".issr");
+      if (!row) return;
+      const title = row.dataset.title;
+      const hit = (input.value.trim() ? shown : APPS).find((x) => x.title === title);
+      close();
+      // let the overlay finish leaving before the window zooms in over it
+      if (hit) setTimeout(() => { try { hit.run(); } catch (err) {} }, 160);
+    });
+    document.addEventListener("keydown", onKey);
+  }
+
+  bar.setAttribute("role", "button");
+  bar.setAttribute("tabindex", "0");
+  bar.style.cursor = "pointer";
+  bar.addEventListener("click", openSearch);
+  bar.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSearch(); }
+  });
 })();
